@@ -5,14 +5,14 @@ const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  
+
   // Development fallback
   if (import.meta.env.DEV) {
     return "http://localhost:4000";
   }
-  
+
   // Production fallback - update this with your actual backend URL
-  return "https://ams-backend.onrender.com";
+  return "https://attendancemanagementsystem.onrender.com";
 };
 
 const api = axios.create({
