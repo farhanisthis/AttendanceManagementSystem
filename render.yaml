@@ -31,4 +31,4 @@ services:
     staticPublishPath: client/dist
     envVars:
       - key: VITE_API_URL
-        value: https://attendancemanagementsystem.onrender.com
+        value: https://attendancemanagementsystem-7t71.onrender.com
