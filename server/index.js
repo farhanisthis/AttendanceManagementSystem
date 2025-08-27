@@ -14,7 +14,8 @@ const app = express();
 const corsOptions = {
   origin: [
     "http://localhost:5173", // Development
-    "https://attendancemanagementsystem-1-o34z.onrender.com", // Your frontend URL
+    "https://attendancemanagementsystem-1-o34z.onrender.com", // Your actual frontend URL
+    "https://attendancemanagementsystem-7t71.onrender.com", // Your latest frontend URL
     "https://attendancemanagementsystem.onrender.com", // Your backend URL
   ],
   credentials: true,
