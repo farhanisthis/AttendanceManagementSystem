@@ -27,7 +27,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 // Handle preflight requests
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 mongoose
   .connect(process.env.MONGO_URI)
