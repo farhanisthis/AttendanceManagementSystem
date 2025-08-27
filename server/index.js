@@ -15,6 +15,7 @@ const corsOptions = {
   origin: [
     "http://localhost:5173", // Development
     "https://attendancemanagementsystem-1-o34z.onrender.com", // Your actual frontend URL
+    "https://attendancemanagementsystem-7t71.onrender.com", // Your new backend URL
     "https://attendancemanagementsystem.onrender.com", // Your old backend URL (for compatibility)
   ],
   credentials: true,
@@ -28,6 +29,14 @@ app.use(morgan("dev"));
 
 // Handle preflight requests
 app.options("*", cors(corsOptions));
+
+// Additional CORS logging for debugging
+app.use((req, res, next) => {
+  console.log(`CORS Request from: ${req.headers.origin}`);
+  console.log(`Request Method: ${req.method}`);
+  console.log(`Request URL: ${req.url}`);
+  next();
+});
 
 mongoose
   .connect(process.env.MONGO_URI)
