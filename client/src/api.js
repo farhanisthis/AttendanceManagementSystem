@@ -12,7 +12,7 @@ const getApiBaseUrl = () => {
   }
 
   // Production fallback - update this with your actual backend URL
-  return "https://attendancemanagementsystem.onrender.com";
+  return "https://attendancemanagementsystem-7t71.onrender.com";
 };
 
 const api = axios.create({
