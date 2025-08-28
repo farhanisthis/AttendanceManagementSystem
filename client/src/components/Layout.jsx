@@ -10,7 +10,10 @@ export default function Layout() {
       </main>
       <footer className="bg-white border-t border-slate-200 py-8 mt-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-600">
-          <p>&copy; 2024 Smart College. All rights reserved.</p>
+          <p>
+            &copy; 2025 Smart Attendance Management System. All rights reserved.
+            Developed By Farhan Ali
+          </p>
         </div>
       </footer>
     </div>

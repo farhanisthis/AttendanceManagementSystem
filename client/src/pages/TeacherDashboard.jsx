@@ -33,6 +33,7 @@ export default function TeacherDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [teacherAssignments, setTeacherAssignments] = useState([]);
   const [mentorship, setMentorship] = useState(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   const days = [
     { id: 1, name: "Monday", short: "Mon" },
@@ -95,6 +96,7 @@ export default function TeacherDashboard() {
 
   const loadTeacherProfile = async () => {
     try {
+      setIsLoadingProfile(true);
       console.log("Loading teacher profile...");
       const { data } = await api.get(`/common/profile`);
       console.log("Profile data received:", data);
@@ -110,24 +112,34 @@ export default function TeacherDashboard() {
       }
     } catch (error) {
       console.error("Error loading teacher profile:", error);
+      toast.error("Failed to load teacher profile");
+    } finally {
+      setIsLoadingProfile(false);
     }
   };
 
   const loadStudents = async (classOrBatch) => {
-    const { data } = await api.get(`/common/students?teacherId=${user._id}`);
+    try {
+      const { data } = await api.get(`/common/students?teacherId=${user._id}`);
 
-    // Filter students by the selected class/batch
-    const filteredStudents = data.filter(
-      (student) => student.classOrBatch === classOrBatch
-    );
-    setStudents(filteredStudents);
+      // Filter students by the selected class/batch
+      const filteredStudents = data.filter(
+        (student) => student.classOrBatch === classOrBatch
+      );
+      setStudents(filteredStudents);
 
-    // Initialize with absent as default
-    const init = {};
-    data.forEach((s) => {
-      init[s._id] = "absent";
-    });
-    setMark(init);
+      // Initialize with absent as default
+      const init = {};
+      filteredStudents.forEach((s) => {
+        init[s._id] = "absent";
+      });
+      setMark(init);
+    } catch (error) {
+      console.error("Error loading students:", error);
+      toast.error("Failed to load students");
+      setStudents([]);
+      setMark({});
+    }
   };
 
   const checkExistingAttendance = async (timetableId, date) => {
@@ -288,22 +300,20 @@ export default function TeacherDashboard() {
         </p>
       </div>
 
-      {/* Debug Info */}
-      <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 mb-4">
-        <h3 className="font-bold text-blue-800 mb-2">🔍 Debug Info</h3>
-        <div className="text-sm">
-          <p>Teacher Assignments: {teacherAssignments?.length || 0}</p>
-          <p>Mentorship: {mentorship ? "Present" : "None"}</p>
-          <p>User ID: {user?._id}</p>
-        </div>
-      </div>
-
       {/* Teacher Assignments Section */}
-      {(teacherAssignments && teacherAssignments.length > 0) ||
-      (mentorship && mentorship.classOrBatch) ? (
+      {isLoadingProfile ? (
+        <Section title="Loading Assignments..." icon="⏳">
+          <div className="text-center py-8">
+            <div className="loading loading-spinner loading-lg text-blue-600"></div>
+            <p className="text-gray-600 mt-4">Loading your assignments...</p>
+          </div>
+        </Section>
+      ) : (teacherAssignments && teacherAssignments.length > 0) ||
+        (mentorship && mentorship.classOrBatch) ? (
         <Section title="Your Assignments & Mentorship" icon="📚">
           {/* Teaching Assignments */}
           {teacherAssignments &&
+            teacherAssignments.length > 0 &&
             teacherAssignments.filter((a) => a.role === "teaching").length >
               0 && (
               <div className="mb-4">
@@ -329,7 +339,7 @@ export default function TeacherDashboard() {
             <div className="mb-4">
               <h4 className="font-medium text-blue-700 mb-2">Mentorship:</h4>
               <div className="flex flex-wrap gap-3">
-                <div className="badge badge-secondary badge-lg">
+                <div className="badge badge-outline  badge-secondary badge-lg">
                   {mentorship.classOrBatch}
                 </div>
                 {mentorship.description && (
@@ -455,7 +465,7 @@ export default function TeacherDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {students.length > 0 ? (
+                    {students && students.length > 0 ? (
                       students.map((s) => (
                         <tr key={s._id}>
                           <td className="font-medium">{s.name}</td>

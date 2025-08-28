@@ -62,7 +62,14 @@ api.interceptors.response.use(
       // Token expired or invalid
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
+
+      // Dispatch custom event to notify auth context
+      window.dispatchEvent(new CustomEvent("tokenExpired"));
+
+      // Only redirect if we're not already on the login page
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

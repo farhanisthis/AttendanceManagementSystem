@@ -1,6 +1,20 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+
 export default function ProtectedRoute({ children }) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  // Show loading while validating authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
   return user ? children : <Navigate to="/login" replace />;
 }

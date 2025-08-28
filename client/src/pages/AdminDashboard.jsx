@@ -93,9 +93,378 @@ export default function AdminDashboard() {
   const [newSubject, setNewSubject] = useState({
     name: "",
     code: "",
-    year: "",
     semester: "",
+    year: "",
   });
+
+  // Function to get subject code, semester, and year based on subject name
+  const getSubjectInfo = (subjectName) => {
+    const subjectInfoMap = {
+      // Semester 1
+      "Discrete Mathematics": {
+        code: "BCA-101",
+        semester: "1st Semester",
+        year: "1st year",
+      },
+      "Programming Using C": {
+        code: "BCA-103",
+        semester: "1st Semester",
+        year: "1st year",
+      },
+      "Fundamentals of Computers & IT": {
+        code: "BCA-105",
+        semester: "1st Semester",
+        year: "1st year",
+      },
+      "Web Technologies": {
+        code: "BCA-107",
+        semester: "1st Semester",
+        year: "1st year",
+      },
+      "Technical Communication": {
+        code: "BCA-109",
+        semester: "1st Semester",
+        year: "1st year",
+      },
+      "C Programming Lab": {
+        code: "BCA-171",
+        semester: "1st Semester",
+        year: "1st year",
+      },
+      "IT Lab": { code: "BCA-173", semester: "1st Semester", year: "1st year" },
+      "Web Tech Lab": {
+        code: "BCA-175",
+        semester: "1st Semester",
+        year: "1st year",
+      },
+
+      // Semester 2
+      "Applied Mathematics": {
+        code: "BCA-102",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "Web Based Programming": {
+        code: "BCA-104",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "Data Structures": {
+        code: "BCA-106",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "Database Management Systems": {
+        code: "BCA-108",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "Environmental Studies": {
+        code: "BCA-110",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "VB.Net Lab": {
+        code: "BCA-134",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "Statistical Analysis using Excel": {
+        code: "BCA-136",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "Photoshop Lab": {
+        code: "BCA-138",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "Web Programming Lab": {
+        code: "BCA-172",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "Data Structures Lab": {
+        code: "BCA-174",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+      "DBMS Lab": {
+        code: "BCA-176",
+        semester: "2nd Semester",
+        year: "1st year",
+      },
+
+      // Semester 3
+      "Computer Networks": {
+        code: "BCA-201",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "Computer Organisation & Architecture": {
+        code: "BCA-203",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "Object Oriented Programming with C++": {
+        code: "BCA-205",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "Human Values & Ethics": {
+        code: "BCA-207",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "Basics of Python Programming": {
+        code: "BCAT-211T",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "Python Lab": {
+        code: "BCAP-211",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "Cyber Security": {
+        code: "BCAT-213",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "Cyber Security Lab": {
+        code: "BCAP-213",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "Principles of Management & Organisational Behaviour": {
+        code: "BCA-221",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "CorelDraw Lab": {
+        code: "BCA-233",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "ASP.Net": {
+        code: "BCA-235",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "AR/VR": { code: "BCA-237", semester: "3rd Semester", year: "2nd year" },
+      "Cyber Ethics": {
+        code: "BCA-239",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+      "C++ Lab": {
+        code: "BCA-271",
+        semester: "3rd Semester",
+        year: "2nd year",
+      },
+
+      // Semester 4
+      "Java Programming": {
+        code: "BCA-202",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Software Engineering": {
+        code: "BCA-204",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Management & Entrepreneurship": {
+        code: "BCA-206",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Introduction to Data Science": {
+        code: "BCAT-212",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Data Science Lab": {
+        code: "BCAP-212",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Introduction to Artificial Intelligence": {
+        code: "BCAT-214",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "AI Lab": {
+        code: "BCAP-214",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Network Security": {
+        code: "BCAT-216",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Network Security Lab": {
+        code: "BCAP-216",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Web Development with Python & Django": {
+        code: "BCAT-218",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Django Lab": {
+        code: "BCAP-218",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Digital Marketing": {
+        code: "BCA-222",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Principles of Accounting": {
+        code: "BCA-224",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Personality Development Skills": {
+        code: "BCA-232",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "Java Lab": {
+        code: "BCA-272",
+        semester: "4th Semester",
+        year: "2nd year",
+      },
+      "SE Lab": { code: "BCA-274", semester: "4th Semester", year: "2nd year" },
+
+      // Semester 5
+      "Operating System & Linux Programming": {
+        code: "BCA-301",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "Computer Graphics": {
+        code: "BCA-303",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "Cloud Computing": {
+        code: "BCA-305",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "Machine Learning with Python": {
+        code: "BCAT-311",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "ML Lab": {
+        code: "BCAP-311",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "Web Security": {
+        code: "BCAT-313",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "Web Security Lab": {
+        code: "BCAP-313",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "Web Development with Java & JSP": {
+        code: "BCAT-315",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "JSP Lab": {
+        code: "BCAP-315",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "OS/Linux Lab": {
+        code: "BCA-371",
+        semester: "5th Semester",
+        year: "3rd year",
+      },
+      "CG Lab": { code: "BCA-373", semester: "5th Semester", year: "3rd year" },
+
+      // Semester 6
+      "Data Warehousing & Data Mining": {
+        code: "BCA-302",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "E-Commerce": {
+        code: "BCA-304",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "Internet of Things": {
+        code: "BCA-306",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "Data Visualization & Analytics": {
+        code: "BCAT-312",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "DVA Lab": {
+        code: "BCAP-312",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "Deep Learning with Python": {
+        code: "BCAT-314",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "DL Lab": {
+        code: "BCAP-314",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "IT Act & Cyber Laws": {
+        code: "BCA-316",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "Mobile Application Development": {
+        code: "BCAT-318",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "Mobile App Dev Lab": {
+        code: "BCAP-318",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "Seminar / Conference Presentation": {
+        code: "BCA-332",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+      "IoT Lab": {
+        code: "BCA-372",
+        semester: "6th Semester",
+        year: "3rd year",
+      },
+    };
+
+    return subjectInfoMap[subjectName] || { code: "", semester: "", year: "" };
+  };
+
+  // Function to get subject code based on subject name (for backward compatibility)
+  const getSubjectCode = (subjectName) => {
+    const info = getSubjectInfo(subjectName);
+    return info.code;
+  };
 
   // Predefined time slots for 1-hour periods (12-hour format with AM/PM) - Only half-hour slots
   const timeSlots = [
@@ -227,41 +596,6 @@ export default function AdminDashboard() {
       toast.error("Failed to load data");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Export data to JSON
-  const exportData = () => {
-    try {
-      const data = {
-        teachers,
-        students,
-        subjects,
-        timetable,
-        attendance,
-        exportDate: new Date().toISOString(),
-        totalUsers: teachers.length + students.length,
-        totalSubjects: subjects.length,
-        totalTimetableSlots: timetable.length,
-        totalAttendanceRecords: attendance.length,
-      };
-
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `ams_data_${new Date().toISOString().split("T")[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast.success("Data exported successfully!");
-    } catch (error) {
-      console.error("Error exporting data:", error);
-      toast.error("Failed to export data");
     }
   };
 
@@ -557,16 +891,16 @@ export default function AdminDashboard() {
     if (
       !newSubject.name ||
       !newSubject.code ||
-      !newSubject.year ||
-      !newSubject.semester
+      !newSubject.semester ||
+      !newSubject.year
     ) {
-      toast.error("Please fill in all fields (Name, Code, Year, Semester)");
+      toast.error("Please select a subject");
       return;
     }
 
     try {
       await api.post("/admin/subjects", newSubject);
-      setNewSubject({ name: "", code: "", year: "", semester: "" });
+      setNewSubject({ name: "", code: "", semester: "", year: "" });
       load();
       toast.success("Subject created successfully!");
     } catch (error) {
@@ -751,8 +1085,13 @@ export default function AdminDashboard() {
   };
 
   const addSubject = async () => {
-    if (!newSubject.name || !newSubject.code) {
-      toast.error("Please fill in all required fields");
+    if (
+      !newSubject.name ||
+      !newSubject.code ||
+      !newSubject.semester ||
+      !newSubject.year
+    ) {
+      toast.error("Please select a subject");
       return;
     }
 
@@ -761,8 +1100,8 @@ export default function AdminDashboard() {
       setNewSubject({
         name: "",
         code: "",
-        year: "",
         semester: "",
+        year: "",
       });
       load();
       toast.success("Subject added successfully!");
@@ -863,9 +1202,7 @@ export default function AdminDashboard() {
         year: mentorshipForm.year,
         section: mentorshipForm.section,
         classOrBatch: `${mentorshipForm.year} - ${mentorshipForm.section}`,
-        description:
-          mentorshipForm.description ||
-          "Academic guidance and career counseling",
+        description: mentorshipForm.description || "Academic",
       };
 
       await api.put(
@@ -917,6 +1254,8 @@ export default function AdminDashboard() {
     }
   };
 
+  // Export filtered data to Excel
+
   return (
     <div className="space-y-8">
       <div className="text-center mb-12">
@@ -963,7 +1302,7 @@ export default function AdminDashboard() {
         )}
 
         {/* Action Buttons */}
-        <div className="mt-4 flex gap-3">
+        <div className="mt-4 flex gap-3 flex-wrap justify-center">
           <button
             onClick={load}
             className="btn btn-outline btn-primary"
@@ -980,15 +1319,6 @@ export default function AdminDashboard() {
                 Refresh Data
               </>
             )}
-          </button>
-
-          <button
-            onClick={() => exportData()}
-            className="btn btn-outline btn-secondary"
-            disabled={isLoading}
-          >
-            <span>📊</span>
-            Export Data
           </button>
         </div>
       </div>
@@ -1097,31 +1427,35 @@ export default function AdminDashboard() {
       </div>
 
       {/* Tabbed Management Interface */}
-      <div className="mb-8">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      <div className="mb-8 flex justify-center">
+        <div className="border-b border-gray-200 p-2">
+          <nav
+            className="-mb-px flex flex-wrap justify-center gap-2"
+            aria-label="Tabs"
+          >
             {[
-              { id: "users", name: "👥 User Management", icon: "👤" },
-              { id: "timetable", name: "📅 Timetable", icon: "📅" },
-              { id: "subjects", name: "📚 Subjects", icon: "📚" },
+              { id: "users", name: "User Management", icon: "👤" },
+              { id: "timetable", name: "Timetable", icon: "📅" },
+              { id: "subjects", name: "Subjects", icon: "📚" },
               {
                 id: "teacher-students",
-                name: "👨‍🏫 Teacher-Students",
+                name: "Teacher-Students",
                 icon: "👨‍🎓",
               },
-              { id: "attendance", name: "✅ Attendance", icon: "✅" },
+              { id: "attendance", name: "Attendance", icon: "✅" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                className={`whitespace-nowrap py-2 px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 rounded-lg shadow-md cursor-pointer min-w-fit ${
                   activeTab === tab.id
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.name}
+                <span className="mr-1 sm:mr-2">{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.name}</span>
+                <span className="sm:hidden">{tab.name.split(" ")[0]}</span>
               </button>
             ))}
           </nav>
@@ -1554,313 +1888,370 @@ export default function AdminDashboard() {
 
               {/* Search Results Summary */}
               {searchTerm && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <p className="text-sm text-gray-600">
-                    Showing results for "
-                    <span className="font-medium text-gray-800">
-                      {searchTerm}
-                    </span>
-                    "
-                    {filterRole !== "all" && (
-                      <span>
-                        {" "}
-                        • Filtered by:{" "}
-                        <span className="font-medium text-gray-800">
-                          {filterRole === "teacher"
-                            ? "Teaching Only"
-                            : "Mentorship Only"}
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-sm sm:text-base text-blue-800 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-600">🔍</span>
+                      <span className="font-semibold">
+                        Search Results for: "
+                        <span className="text-blue-900 underline">
+                          {searchTerm}
                         </span>
+                        "
                       </span>
+                    </div>
+                    {filterRole !== "all" && (
+                      <div className="flex items-center gap-2 ml-6">
+                        <span className="text-blue-600">📊</span>
+                        <span>
+                          Filter:{" "}
+                          <span className="font-semibold text-blue-900">
+                            {filterRole === "teacher"
+                              ? "Teaching Only"
+                              : "Mentorship Only"}
+                          </span>
+                        </span>
+                      </div>
                     )}
-                  </p>
+                    <div className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded border border-blue-200">
+                      💡 Tip: Use filters to narrow down results
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="overflow-x-auto bg-white rounded-lg border border-gray-200 shadow-sm">
-              <table className="table w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                      Name
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                      Email
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                      Phone
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                      Section Assignments
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(() => {
-                    // First filter by role
-                    let roleFilteredTeachers = teachers;
-                    if (filterRole === "teacher") {
-                      // Show only teachers with teaching assignments BUT NO mentorship
-                      roleFilteredTeachers = teachers.filter(
-                        (t) =>
-                          t.teacherAssignments &&
-                          t.teacherAssignments.some(
-                            (a) => a.role === "teaching"
-                          ) &&
-                          (!t.mentorship || !t.mentorship.classOrBatch)
-                      );
-                    } else if (filterRole === "student") {
-                      // Show only teachers with mentorship assignments BUT NO teaching
-                      roleFilteredTeachers = teachers.filter(
-                        (t) =>
-                          t.mentorship &&
-                          t.mentorship.classOrBatch &&
-                          (!t.teacherAssignments ||
-                            !t.teacherAssignments.some(
+            <div className="bg-white rounded-xl border border-gray-100 shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="table w-full">
+                  <thead className="bg-gradient-to-r from-slate-50 to-blue-50">
+                    <tr>
+                      <th className="px-4 py-4 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-600">👤</span>
+                          <span className="hidden sm:inline">Name</span>
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-600">📧</span>
+                          <span className="hidden sm:inline">Email</span>
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-600">📱</span>
+                          <span className="hidden sm:inline">Phone</span>
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-600">📚</span>
+                          <span className="hidden sm:inline">
+                            Section Assignments
+                          </span>
+                        </div>
+                      </th>
+                      <th className="px-4 py-4 text-left text-sm font-semibold text-slate-700 uppercase tracking-wider border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-600">⚙️</span>
+                          <span className="hidden sm:inline">Actions</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      // First filter by role
+                      let roleFilteredTeachers = teachers;
+                      if (filterRole === "teacher") {
+                        // Show only teachers with teaching assignments BUT NO mentorship
+                        roleFilteredTeachers = teachers.filter(
+                          (t) =>
+                            t.teacherAssignments &&
+                            t.teacherAssignments.some(
                               (a) => a.role === "teaching"
-                            ))
-                      );
-                    }
-                    // filterRole === "all" shows all teachers
-
-                    // Then filter by search term
-                    const filteredTeachers = roleFilteredTeachers.filter(
-                      (t) => {
-                        if (searchTerm) {
-                          const term = searchTerm.toLowerCase();
-                          return (
-                            t.name.toLowerCase().includes(term) ||
-                            t.email.toLowerCase().includes(term)
-                          );
-                        }
-                        return true;
-                      }
-                    );
-
-                    if (filteredTeachers.length === 0) {
-                      return (
-                        <tr>
-                          <td colSpan="5" className="text-center opacity-70">
-                            {searchTerm
-                              ? "No teachers found matching your search"
-                              : filterRole === "student"
-                              ? "No teachers with mentorship only found"
-                              : filterRole === "teacher"
-                              ? "No teachers with teaching only found"
-                              : "No teachers added yet"}
-                          </td>
-                        </tr>
-                      );
-                    }
-
-                    return (
-                      showAllTeachers
-                        ? filteredTeachers
-                        : filteredTeachers.slice(0, 10)
-                    ).map((t) => (
-                      <tr
-                        key={t._id}
-                        className="hover:bg-gray-50 transition-colors duration-150"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {editingUser?._id === t._id ? (
-                            <input
-                              className="input input-bordered input-sm w-full"
-                              value={editForm.name}
-                              onChange={(e) =>
-                                setEditForm((f) => ({
-                                  ...f,
-                                  name: e.target.value,
-                                }))
-                              }
-                            />
-                          ) : (
-                            <div className="text-sm font-medium text-gray-900">
-                              {t.name}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {editingUser?._id === t._id ? (
-                            <input
-                              className="input input-bordered input-sm w-full"
-                              value={editForm.email}
-                              onChange={(e) =>
-                                setEditForm((f) => ({
-                                  ...f,
-                                  email: e.target.value,
-                                }))
-                              }
-                            />
-                          ) : (
-                            <div className="text-sm text-gray-600">
-                              {t.email}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {editingUser?._id === t._id ? (
-                            <input
-                              className="input input-bordered input-sm w-full"
-                              placeholder="Phone"
-                              value={editForm.phone}
-                              onChange={(e) =>
-                                setEditForm((f) => ({
-                                  ...f,
-                                  phone: e.target.value,
-                                }))
-                              }
-                            />
-                          ) : (
-                            <div className="text-sm text-gray-600">
-                              {t.phone || "Not provided"}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="space-y-3">
-                            {/* Teaching Assignments */}
-                            {t.teacherAssignments &&
-                              t.teacherAssignments.filter(
+                            ) &&
+                            (!t.mentorship || !t.mentorship.classOrBatch)
+                        );
+                      } else if (filterRole === "student") {
+                        // Show only teachers with mentorship assignments BUT NO teaching
+                        roleFilteredTeachers = teachers.filter(
+                          (t) =>
+                            t.mentorship &&
+                            t.mentorship.classOrBatch &&
+                            (!t.teacherAssignments ||
+                              !t.teacherAssignments.some(
                                 (a) => a.role === "teaching"
-                              ).length > 0 && (
-                                <div className="mb-3">
-                                  <div className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                                    📚 Teaching
-                                  </div>
-                                  <div className="space-y-2">
-                                    {t.teacherAssignments
-                                      .filter((a) => a.role === "teaching")
-                                      .map((assignment, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2 border border-blue-200"
-                                        >
-                                          <span className="text-sm font-medium text-blue-800">
-                                            {assignment.classOrBatch}
-                                            {assignment.subjectName &&
-                                              ` • ${assignment.subjectName}`}
-                                          </span>
-                                          <button
-                                            className="btn btn-xs btn-error bg-red-500 hover:bg-red-600 border-0 text-white"
-                                            onClick={() =>
-                                              removeTeacherAssignment(
-                                                t._id,
-                                                t.teacherAssignments.findIndex(
-                                                  (a) => a === assignment
-                                                )
-                                              )
-                                            }
-                                            title="Remove assignment"
-                                          >
-                                            ✕
-                                          </button>
-                                        </div>
-                                      ))}
-                                  </div>
-                                </div>
-                              )}
+                              ))
+                        );
+                      }
+                      // filterRole === "all" shows all teachers
 
-                            {/* Mentorship Assignment */}
-                            {t.mentorship && t.mentorship.classOrBatch && (
-                              <div className="mb-3">
-                                <div className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                                  🎯 Mentorship
-                                </div>
-                                <div className="bg-purple-50 rounded-lg px-3 py-2 border border-purple-200">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-sm font-medium text-purple-800">
-                                      {t.mentorship.classOrBatch}
-                                    </span>
-                                    <button
-                                      className="btn btn-xs btn-error bg-red-500 hover:bg-red-600 border-0 text-white"
-                                      onClick={() => removeMentorship(t._id)}
-                                      title="Remove mentorship"
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                  {t.mentorship.description && (
-                                    <div className="text-xs text-purple-600 mt-1">
-                                      {t.mentorship.description}
-                                    </div>
-                                  )}
-                                </div>
+                      // Then filter by search term
+                      const filteredTeachers = roleFilteredTeachers.filter(
+                        (t) => {
+                          if (searchTerm) {
+                            const term = searchTerm.toLowerCase();
+                            return (
+                              t.name.toLowerCase().includes(term) ||
+                              t.email.toLowerCase().includes(term)
+                            );
+                          }
+                          return true;
+                        }
+                      );
+
+                      if (filteredTeachers.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan="5" className="text-center opacity-70">
+                              {searchTerm
+                                ? "No teachers found matching your search"
+                                : filterRole === "student"
+                                ? "No teachers with mentorship only found"
+                                : filterRole === "teacher"
+                                ? "No teachers with teaching only found"
+                                : "No teachers added yet"}
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      return (
+                        showAllTeachers
+                          ? filteredTeachers
+                          : filteredTeachers.slice(0, 10)
+                      ).map((t) => (
+                        <tr
+                          key={t._id}
+                          className="hover:bg-slate-50 transition-all duration-200 border-b border-slate-100"
+                        >
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            {editingUser?._id === t._id ? (
+                              <input
+                                className="input input-bordered input-sm w-full text-sm h-10"
+                                value={editForm.name}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    name: e.target.value,
+                                  }))
+                                }
+                              />
+                            ) : (
+                              <div className="text-sm font-semibold text-slate-800 truncate max-w-24 sm:max-w-32">
+                                {t.name}
                               </div>
                             )}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            {editingUser?._id === t._id ? (
+                              <input
+                                className="input input-bordered input-sm w-full text-sm h-10"
+                                value={editForm.email}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    email: e.target.value,
+                                  }))
+                                }
+                              />
+                            ) : (
+                              <div className="text-sm text-slate-600 truncate max-w-24 sm:max-w-32 font-medium">
+                                {t.email}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            {editingUser?._id === t._id ? (
+                              <input
+                                className="input input-bordered input-sm w-full text-sm h-10"
+                                placeholder="Phone"
+                                value={editForm.phone}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    phone: e.target.value,
+                                  }))
+                                }
+                              />
+                            ) : (
+                              <div className="text-sm text-slate-600 truncate max-w-20 sm:max-w-28 font-medium">
+                                {t.phone || "Not provided"}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="space-y-2 flex justify-between w-65 items-center">
+                              {/* Teaching Assignments */}
+                              {t.teacherAssignments &&
+                                t.teacherAssignments.filter(
+                                  (a) => a.role === "teaching"
+                                ).length > 0 && (
+                                  <div className="mb-2">
+                                    <div className="text-xs font-semibold text-slate-700 mb-1 uppercase tracking-wide flex items-center gap-1">
+                                      <span className="text-blue-600">📚</span>
+                                      <span className="hidden sm:inline">
+                                        Teaching
+                                      </span>
+                                    </div>
+                                    <div className="space-y-1">
+                                      {t.teacherAssignments
+                                        .filter((a) => a.role === "teaching")
+                                        .map((assignment, index) => (
+                                          <div
+                                            key={index}
+                                            className="flex items-center justify-between bg-gradient-to-r w-30 from-blue-50 to-blue-100 rounded-md px-2 py-1 border border-blue-200 shadow-sm"
+                                          >
+                                            <span className="font-medium text-blue-800 truncate max-w-10 sm:max-w-18 text-xs">
+                                              {assignment.classOrBatch}
+                                              {assignment.subjectName &&
+                                                ` • ${assignment.subjectName}`}
+                                            </span>
+                                            <button
+                                              className=" border-0 !text-white ml-1 h-5  w-5 p-0 rounded-full  shadow-sm text-xs cursor-pointer !bg-red-500 hover:!bg-red-600"
+                                              onClick={() =>
+                                                removeTeacherAssignment(
+                                                  t._id,
+                                                  t.teacherAssignments.findIndex(
+                                                    (a) => a === assignment
+                                                  )
+                                                )
+                                              }
+                                              title="Remove assignment"
+                                            >
+                                              ✕
+                                            </button>
+                                          </div>
+                                        ))}
+                                    </div>
+                                  </div>
+                                )}
 
-                            {(!t.teacherAssignments ||
-                              t.teacherAssignments.length === 0) &&
-                              !t.mentorship?.classOrBatch && (
-                                <div className="text-center py-3">
-                                  <span className="text-sm text-gray-400 italic">
-                                    No assignments yet
-                                  </span>
+                              {/* Mentorship Assignment */}
+                              {t.mentorship && t.mentorship.classOrBatch && (
+                                <div className="mb-2">
+                                  <div className="text-xs font-semibold text-slate-700 mb-1 uppercase tracking-wide flex items-center gap-1 ">
+                                    <span className="text-purple-600">🎯</span>
+                                    <span className="hidden sm:inline">
+                                      Mentorship
+                                    </span>
+                                  </div>
+                                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-md px-2 py-1 border border-purple-200 shadow-sm w-30">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-medium text-purple-800 truncate max-w-10 sm:max-w-18">
+                                        {t.mentorship.classOrBatch}
+                                      </span>
+                                      <button
+                                        className=" border-0 !text-white ml-1 h-5  w-5 p-0 rounded-full  shadow-sm text-xs cursor-pointer !bg-red-500 hover:!bg-red-600"
+                                        onClick={() => removeMentorship(t._id)}
+                                        title="Remove mentorship"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                    {t.mentorship.description && (
+                                      <div className="text-xs text-purple-600 mt-1 line-clamp-1">
+                                        {t.mentorship.description}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {editingUser?._id === t._id ? (
-                            <div className="flex gap-2">
-                              <button
-                                className="btn btn-xs btn-success bg-green-500 hover:bg-green-600 border-0 text-white"
-                                onClick={saveEditUser}
-                              >
-                                💾 Save
-                              </button>
-                              <button
-                                className="btn btn-xs btn-outline border-gray-300 text-gray-700 hover:bg-gray-50"
-                                onClick={cancelEdit}
-                              >
-                                ❌ Cancel
-                              </button>
+
+                              {(!t.teacherAssignments ||
+                                t.teacherAssignments.length === 0) &&
+                                !t.mentorship?.classOrBatch && (
+                                  <div className="text-center py-2">
+                                    <span className="text-xs text-slate-400 italic bg-slate-50 px-2 py-1 rounded-md border border-slate-200">
+                                      No assignments
+                                    </span>
+                                  </div>
+                                )}
                             </div>
-                          ) : (
-                            <div className="flex flex-wrap gap-2 flex-col">
-                              <button
-                                className="btn btn-xs btn-outline border-blue-300 text-blue-700 hover:bg-blue-50"
-                                onClick={() => startEditUser(t)}
-                              >
-                                ✏️ Edit
-                              </button>
-                              <button
-                                className="btn btn-xs btn-primary bg-blue-500 hover:bg-blue-600 border-0 text-white"
-                                onClick={() => startAssignTeacher(t)}
-                              >
-                                📚 Assign Section
-                              </button>
-                              <button
-                                className="btn btn-xs btn-secondary bg-purple-500 hover:bg-purple-600 border-0 text-white"
-                                onClick={() => {
-                                  setAssigningTeacher(t);
-                                  setShowMentorshipForm(true);
-                                  setMentorshipForm({
-                                    year: "",
-                                    section: "",
-                                    description: "",
-                                  });
-                                }}
-                              >
-                                🎯 Assign Mentorship
-                              </button>
-                              <button
-                                className="btn btn-xs btn-error bg-red-500 hover:bg-red-600 border-0 text-white"
-                                onClick={() => deleteUser(t._id)}
-                              >
-                                🗑️ Delete
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ));
-                  })()}
-                </tbody>
-              </table>
+                          </td>
+                          <td className="px-2 py-1 whitespace-nowrap">
+                            {editingUser?._id === t._id ? (
+                              <div className="flex gap-2">
+                                <button
+                                  className="btn btn-sm btn-success bg-green-500 hover:bg-green-600 border-0 text-white h-8 px-3 rounded-lg shadow-sm"
+                                  onClick={saveEditUser}
+                                >
+                                  <span className="hidden sm:inline">
+                                    💾 Save
+                                  </span>
+                                  <span className="sm:hidden">💾</span>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-outline border-slate-300 text-slate-700 hover:bg-slate-50 h-8 px-3 rounded-lg shadow-sm"
+                                  onClick={cancelEdit}
+                                >
+                                  <span className="hidden sm:inline">
+                                    ❌ Cancel
+                                  </span>
+                                  <span className="sm:hidden">❌</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  className="btn btn-sm btn-outline border-blue-300 text-blue-700 hover:bg-blue-50 h-8 px-3 rounded-lg shadow-sm"
+                                  onClick={() => startEditUser(t)}
+                                  title="Edit user"
+                                >
+                                  <span className="hidden sm:inline">
+                                    ✏️ Edit
+                                  </span>
+                                  <span className="sm:hidden">✏️</span>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-primary bg-blue-500 hover:bg-blue-600 border-0 text-white h-8 px-3 rounded-lg shadow-sm"
+                                  onClick={() => startAssignTeacher(t)}
+                                  title="Assign section"
+                                >
+                                  <span className="hidden sm:inline">
+                                    📚 Assign
+                                  </span>
+                                  <span className="sm:hidden">📚</span>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-secondary bg-purple-500 hover:bg-purple-600 border-0 text-white h-8 px-3 rounded-lg shadow-sm"
+                                  onClick={() => {
+                                    setAssigningTeacher(t);
+                                    setShowMentorshipForm(true);
+                                    setMentorshipForm({
+                                      year: "",
+                                      section: "",
+                                      description: "",
+                                    });
+                                  }}
+                                  title="Assign mentorship"
+                                >
+                                  <span className="hidden sm:inline">
+                                    🎯 Mentor
+                                  </span>
+                                  <span className="sm:hidden">🎯</span>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-error bg-red-500 hover:bg-red-600 border-0 text-white h-8 px-3 rounded-lg shadow-sm"
+                                  onClick={() => deleteUser(t._id)}
+                                  title="Delete user"
+                                >
+                                  <span className="hidden sm:inline">
+                                    🗑️ Delete
+                                  </span>
+                                  <span className="sm:hidden">🗑️</span>
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ));
+                    })()}
+                  </tbody>
+                </table>
+              </div>
 
               {/* Pagination for Teachers */}
               {(() => {
@@ -1901,21 +2292,23 @@ export default function AdminDashboard() {
                 });
 
                 return filteredTeachers.length > 10 ? (
-                  <div className="mt-6 flex justify-center">
-                    <div className="bg-white rounded-lg border border-gray-200 px-4 py-3 shadow-sm">
+                  <div className="mt-8 flex justify-center">
+                    <div className="bg-white rounded-xl border border-slate-200 px-6 py-4 shadow-lg">
                       <button
-                        className="btn btn-outline btn-sm border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
+                        className="btn btn-outline btn-md border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 rounded-lg shadow-sm transition-all duration-200"
                         onClick={() => setShowAllTeachers(!showAllTeachers)}
                       >
                         {showAllTeachers ? (
                           <>
-                            <span>👁️</span>
-                            Show Less
+                            <span className="text-lg">👁️</span>
+                            <span className="ml-2">Show Less</span>
                           </>
                         ) : (
                           <>
-                            <span>📋</span>
-                            Show All ({filteredTeachers.length})
+                            <span className="text-lg">📋</span>
+                            <span className="ml-2">
+                              Show All ({filteredTeachers.length})
+                            </span>
                           </>
                         )}
                       </button>
@@ -2377,52 +2770,181 @@ export default function AdminDashboard() {
           </Section>
 
           <Section title="Subjects" icon="📚">
-            <div className="grid grid-cols-4 gap-2">
-              <input
-                className="input input-bordered"
-                placeholder="Name"
+            <div className="grid grid-cols-2 gap-4">
+              <select
+                className="select select-bordered w-full"
                 value={newSubject.name}
-                onChange={(e) =>
-                  setNewSubject((v) => ({ ...v, name: e.target.value }))
-                }
-              />
-              <input
-                className="input input-bordered"
-                placeholder="Code"
-                value={newSubject.code}
-                onChange={(e) =>
-                  setNewSubject((v) => ({ ...v, code: e.target.value }))
-                }
-              />
-              <select
-                className="select select-bordered"
-                value={newSubject.year}
-                onChange={(e) =>
-                  setNewSubject((v) => ({ ...v, year: e.target.value }))
-                }
+                onChange={(e) => {
+                  const selectedSubject = e.target.value;
+                  setNewSubject((v) => ({
+                    ...v,
+                    name: selectedSubject,
+                    code: getSubjectCode(selectedSubject),
+                  }));
+                }}
               >
-                <option value="">Select Year</option>
-                <option value="1st year">1st Year</option>
-                <option value="2nd year">2nd Year</option>
-                <option value="3rd year">3rd Year</option>
+                <option value="">Select Subject</option>
+                <optgroup label="Semester 1">
+                  <option value="Discrete Mathematics">
+                    Discrete Mathematics
+                  </option>
+                  <option value="Programming Using C">
+                    Programming Using C
+                  </option>
+                  <option value="Fundamentals of Computers & IT">
+                    Fundamentals of Computers & IT
+                  </option>
+                  <option value="Web Technologies">Web Technologies</option>
+                  <option value="Technical Communication">
+                    Technical Communication
+                  </option>
+                  <option value="C Programming Lab">C Programming Lab</option>
+                  <option value="IT Lab">IT Lab</option>
+                  <option value="Web Tech Lab">Web Tech Lab</option>
+                </optgroup>
+                <optgroup label="Semester 2">
+                  <option value="Applied Mathematics">
+                    Applied Mathematics
+                  </option>
+                  <option value="Web Based Programming">
+                    Web Based Programming
+                  </option>
+                  <option value="Data Structures">Data Structures</option>
+                  <option value="Database Management Systems">
+                    Database Management Systems
+                  </option>
+                  <option value="Environmental Studies">
+                    Environmental Studies
+                  </option>
+                  <option value="VB.Net Lab">VB.Net Lab</option>
+                  <option value="Statistical Analysis using Excel">
+                    Statistical Analysis using Excel
+                  </option>
+                  <option value="Photoshop Lab">Photoshop Lab</option>
+                  <option value="Web Programming Lab">
+                    Web Programming Lab
+                  </option>
+                  <option value="Data Structures Lab">
+                    Data Structures Lab
+                  </option>
+                  <option value="DBMS Lab">DBMS Lab</option>
+                </optgroup>
+                <optgroup label="Semester 3">
+                  <option value="Computer Networks">Computer Networks</option>
+                  <option value="Computer Organisation & Architecture">
+                    Computer Organisation & Architecture
+                  </option>
+                  <option value="Object Oriented Programming with C++">
+                    Object Oriented Programming with C++
+                  </option>
+                  <option value="Human Values & Ethics">
+                    Human Values & Ethics
+                  </option>
+                  <option value="Basics of Python Programming">
+                    Basics of Python Programming
+                  </option>
+                  <option value="Python Lab">Python Lab</option>
+                  <option value="Cyber Security">Cyber Security</option>
+                  <option value="Cyber Security Lab">Cyber Security Lab</option>
+                  <option value="Principles of Management & Organisational Behaviour">
+                    Principles of Management & Organisational Behaviour
+                  </option>
+                  <option value="CorelDraw Lab">CorelDraw Lab</option>
+                  <option value="ASP.Net">ASP.Net</option>
+                  <option value="AR/VR">AR/VR</option>
+                  <option value="Cyber Ethics">Cyber Ethics</option>
+                  <option value="C++ Lab">C++ Lab</option>
+                </optgroup>
+                <optgroup label="Semester 4">
+                  <option value="Java Programming">Java Programming</option>
+                  <option value="Software Engineering">
+                    Software Engineering
+                  </option>
+                  <option value="Management & Entrepreneurship">
+                    Management & Entrepreneurship
+                  </option>
+                  <option value="Introduction to Data Science">
+                    Introduction to Data Science
+                  </option>
+                  <option value="Data Science Lab">Data Science Lab</option>
+                  <option value="Introduction to Artificial Intelligence">
+                    Introduction to Artificial Intelligence
+                  </option>
+                  <option value="AI Lab">AI Lab</option>
+                  <option value="Network Security">Network Security</option>
+                  <option value="Network Security Lab">
+                    Network Security Lab
+                  </option>
+                  <option value="Web Development with Python & Django">
+                    Web Development with Python & Django
+                  </option>
+                  <option value="Django Lab">Django Lab</option>
+                  <option value="Digital Marketing">Digital Marketing</option>
+                  <option value="Principles of Accounting">
+                    Principles of Accounting
+                  </option>
+                  <option value="Personality Development Skills">
+                    Personality Development Skills
+                  </option>
+                  <option value="Java Lab">Java Lab</option>
+                  <option value="SE Lab">SE Lab</option>
+                </optgroup>
+                <optgroup label="Semester 5">
+                  <option value="Operating System & Linux Programming">
+                    Operating System & Linux Programming
+                  </option>
+                  <option value="Computer Graphics">Computer Graphics</option>
+                  <option value="Cloud Computing">Cloud Computing</option>
+                  <option value="Machine Learning with Python">
+                    Machine Learning with Python
+                  </option>
+                  <option value="ML Lab">ML Lab</option>
+                  <option value="Web Security">Web Security</option>
+                  <option value="Web Security Lab">Web Security Lab</option>
+                  <option value="Web Development with Java & JSP">
+                    Web Development with Java & JSP
+                  </option>
+                  <option value="JSP Lab">JSP Lab</option>
+                  <option value="OS/Linux Lab">OS/Linux Lab</option>
+                  <option value="CG Lab">CG Lab</option>
+                </optgroup>
+                <optgroup label="Semester 6">
+                  <option value="Data Warehousing & Data Mining">
+                    Data Warehousing & Data Mining
+                  </option>
+                  <option value="E-Commerce">E-Commerce</option>
+                  <option value="Internet of Things">Internet of Things</option>
+                  <option value="Data Visualization & Analytics">
+                    Data Visualization & Analytics
+                  </option>
+                  <option value="DVA Lab">DVA Lab</option>
+                  <option value="Deep Learning with Python">
+                    Deep Learning with Python
+                  </option>
+                  <option value="DL Lab">DL Lab</option>
+                  <option value="IT Act & Cyber Laws">
+                    IT Act & Cyber Laws
+                  </option>
+                  <option value="Mobile Application Development">
+                    Mobile Application Development
+                  </option>
+                  <option value="Mobile App Dev Lab">Mobile App Dev Lab</option>
+                  <option value="Seminar / Conference Presentation">
+                    Seminar / Conference Presentation
+                  </option>
+                  <option value="IoT Lab">IoT Lab</option>
+                </optgroup>
               </select>
-              <select
-                className="select select-bordered"
-                value={newSubject.semester}
-                onChange={(e) =>
-                  setNewSubject((v) => ({ ...v, semester: e.target.value }))
-                }
-              >
-                <option value="">Select Semester</option>
-                <option value="1st Semester">1st Semester</option>
-                <option value="2nd Semester">2nd Semester</option>
-                <option value="3rd Semester">3rd Semester</option>
-                <option value="4th Semester">4th Semester</option>
-                <option value="5th Semester">5th Semester</option>
-                <option value="6th Semester">6th Semester</option>
-              </select>
+              <div className="bg-gray-100 rounded-lg p-3 border border-gray-200">
+                <div className="text-sm font-medium text-gray-700 mb-1">
+                  Subject Code
+                </div>
+                <div className="text-lg font-semibold text-blue-600">
+                  {newSubject.code || "Select a subject first"}
+                </div>
+              </div>
             </div>
-            <div className="mt-3 flex justify-center">
+            <div className="mt-3 flex justify-center ">
               <button className="btn btn-primary" onClick={createSubject}>
                 Add Subject
               </button>
@@ -2432,7 +2954,7 @@ export default function AdminDashboard() {
                 subjects.map((sub) => (
                   <div
                     key={sub._id}
-                    className="badge bg-gray-100 flex items-center gap-2 "
+                    className="badge w-120  bg-gray-200 flex items-center justify-between gap-2  "
                   >
                     <span>
                       {sub.name} ({sub.code})
@@ -2595,58 +3117,201 @@ export default function AdminDashboard() {
       {activeTab === "subjects" && (
         <div className="space-y-8">
           <Section title="Subjects" icon="📚">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  className="input input-bordered w-full"
-                  placeholder="Subject Name"
+            <div className="space-y-4 flex items-center justify-center w-full">
+              <div className="grid grid-cols-2  ">
+                <select
+                  className="select select-bordered w-full mt-5"
                   value={newSubject.name}
-                  onChange={(e) =>
-                    setNewSubject((v) => ({ ...v, name: e.target.value }))
-                  }
-                />
-                <input
-                  className="input input-bordered w-full"
-                  placeholder="Subject Code"
-                  value={newSubject.code}
-                  onChange={(e) =>
-                    setNewSubject((v) => ({ ...v, code: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <select
-                  className="select select-bordered w-full"
-                  value={newSubject.year}
-                  onChange={(e) =>
-                    setNewSubject((v) => ({ ...v, year: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    const selectedSubject = e.target.value;
+                    if (selectedSubject) {
+                      const subjectInfo = getSubjectInfo(selectedSubject);
+                      setNewSubject((v) => ({
+                        ...v,
+                        name: selectedSubject,
+                        code: subjectInfo.code,
+                        semester: subjectInfo.semester,
+                        year: subjectInfo.year,
+                      }));
+                    } else {
+                      setNewSubject((v) => ({
+                        ...v,
+                        name: "",
+                        code: "",
+                        semester: "",
+                        year: "",
+                      }));
+                    }
+                  }}
                 >
-                  <option value="">Select Year</option>
-                  <option value="1st year">1st Year</option>
-                  <option value="2nd year">2nd Year</option>
-                  <option value="3rd year">3rd Year</option>
-                </select>
-
-                <select
-                  className="select select-bordered w-full"
-                  value={newSubject.semester}
-                  onChange={(e) =>
-                    setNewSubject((v) => ({ ...v, semester: e.target.value }))
-                  }
-                >
-                  <option value="">Select Semester</option>
-                  <option value="1st semester">1st Semester</option>
-                  <option value="2nd semester">2nd Semester</option>
+                  <option value="">Select Subject</option>
+                  <optgroup label="Semester 1">
+                    <option value="Discrete Mathematics">
+                      Discrete Mathematics
+                    </option>
+                    <option value="Programming Using C">
+                      Programming Using C
+                    </option>
+                    <option value="Fundamentals of Computers & IT">
+                      Fundamentals of Computers & IT
+                    </option>
+                    <option value="Web Technologies">Web Technologies</option>
+                    <option value="Technical Communication">
+                      Technical Communication
+                    </option>
+                    <option value="C Programming Lab">C Programming Lab</option>
+                    <option value="IT Lab">IT Lab</option>
+                    <option value="Web Tech Lab">Web Tech Lab</option>
+                  </optgroup>
+                  <optgroup label="Semester 2">
+                    <option value="Applied Mathematics">
+                      Applied Mathematics
+                    </option>
+                    <option value="Web Based Programming">
+                      Web Based Programming
+                    </option>
+                    <option value="Data Structures">Data Structures</option>
+                    <option value="Database Management Systems">
+                      Database Management Systems
+                    </option>
+                    <option value="Environmental Studies">
+                      Environmental Studies
+                    </option>
+                    <option value="VB.Net Lab">VB.Net Lab</option>
+                    <option value="Statistical Analysis using Excel">
+                      Statistical Analysis using Excel
+                    </option>
+                    <option value="Photoshop Lab">Photoshop Lab</option>
+                    <option value="Web Programming Lab">
+                      Web Programming Lab
+                    </option>
+                    <option value="Data Structures Lab">
+                      Data Structures Lab
+                    </option>
+                    <option value="DBMS Lab">DBMS Lab</option>
+                  </optgroup>
+                  <optgroup label="Semester 3">
+                    <option value="Computer Networks">Computer Networks</option>
+                    <option value="Computer Organisation & Architecture">
+                      Computer Organisation & Architecture
+                    </option>
+                    <option value="Object Oriented Programming with C++">
+                      Object Oriented Programming with C++
+                    </option>
+                    <option value="Human Values & Ethics">
+                      Human Values & Ethics
+                    </option>
+                    <option value="Basics of Python Programming">
+                      Basics of Python Programming
+                    </option>
+                    <option value="Python Lab">Python Lab</option>
+                    <option value="Cyber Security">Cyber Security</option>
+                    <option value="Cyber Security Lab">
+                      Cyber Security Lab
+                    </option>
+                    <option value="Principles of Management & Organisational Behaviour">
+                      Principles of Management & Organisational Behaviour
+                    </option>
+                    <option value="CorelDraw Lab">CorelDraw Lab</option>
+                    <option value="ASP.Net">ASP.Net</option>
+                    <option value="AR/VR">AR/VR</option>
+                    <option value="Cyber Ethics">Cyber Ethics</option>
+                    <option value="C++ Lab">C++ Lab</option>
+                  </optgroup>
+                  <optgroup label="Semester 4">
+                    <option value="Java Programming">Java Programming</option>
+                    <option value="Software Engineering">
+                      Software Engineering
+                    </option>
+                    <option value="Management & Entrepreneurship">
+                      Management & Entrepreneurship
+                    </option>
+                    <option value="Introduction to Data Science">
+                      Introduction to Data Science
+                    </option>
+                    <option value="Data Science Lab">Data Science Lab</option>
+                    <option value="Introduction to Artificial Intelligence">
+                      Introduction to Artificial Intelligence
+                    </option>
+                    <option value="AI Lab">AI Lab</option>
+                    <option value="Network Security">Network Security</option>
+                    <option value="Network Security Lab">
+                      Network Security Lab
+                    </option>
+                    <option value="Web Development with Python & Django">
+                      Web Development with Python & Django
+                    </option>
+                    <option value="Django Lab">Django Lab</option>
+                    <option value="Digital Marketing">Digital Marketing</option>
+                    <option value="Principles of Accounting">
+                      Principles of Accounting
+                    </option>
+                    <option value="Personality Development Skills">
+                      Personality Development Skills
+                    </option>
+                    <option value="Java Lab">Java Lab</option>
+                    <option value="SE Lab">SE Lab</option>
+                  </optgroup>
+                  <optgroup label="Semester 5">
+                    <option value="Operating System & Linux Programming">
+                      Operating System & Linux Programming
+                    </option>
+                    <option value="Computer Graphics">Computer Graphics</option>
+                    <option value="Cloud Computing">Cloud Computing</option>
+                    <option value="Machine Learning with Python">
+                      Machine Learning with Python
+                    </option>
+                    <option value="ML Lab">ML Lab</option>
+                    <option value="Web Security">Web Security</option>
+                    <option value="Web Security Lab">Web Security Lab</option>
+                    <option value="Web Development with Java & JSP">
+                      Web Development with Java & JSP
+                    </option>
+                    <option value="JSP Lab">JSP Lab</option>
+                    <option value="OS/Linux Lab">OS/Linux Lab</option>
+                    <option value="CG Lab">CG Lab</option>
+                  </optgroup>
+                  <optgroup label="Semester 6">
+                    <option value="Data Warehousing & Data Mining">
+                      Data Warehousing & Data Mining
+                    </option>
+                    <option value="E-Commerce">E-Commerce</option>
+                    <option value="Internet of Things">
+                      Internet of Things
+                    </option>
+                    <option value="Data Visualization & Analytics">
+                      Data Visualization & Analytics
+                    </option>
+                    <option value="DVA Lab">DVA Lab</option>
+                    <option value="Deep Learning with Python">
+                      Deep Learning with Python
+                    </option>
+                    <option value="DL Lab">DL Lab</option>
+                    <option value="IT Act & Cyber Laws">
+                      IT Act & Cyber Laws
+                    </option>
+                    <option value="Mobile Application Development">
+                      Mobile Application Development
+                    </option>
+                    <option value="Mobile App Dev Lab">
+                      Mobile App Dev Lab
+                    </option>
+                    <option value="Seminar / Conference Presentation">
+                      Seminar / Conference Presentation
+                    </option>
+                    <option value="IoT Lab">IoT Lab</option>
+                  </optgroup>
                 </select>
               </div>
 
               <button
-                className="btn btn-primary w-full"
+                className="btn !m-0 btn-primary w-1/2 sm:w-full md:w-1/2 lg:w-1/2"
                 onClick={addSubject}
                 disabled={
-                  !newSubject.name || !newSubject.code || !newSubject.year
+                  !newSubject.name ||
+                  !newSubject.code ||
+                  !newSubject.semester ||
+                  !newSubject.year
                 }
               >
                 <span>📚</span>
@@ -2723,7 +3388,7 @@ export default function AdminDashboard() {
 
       {activeTab === "teacher-students" && (
         <div className="space-y-8">
-          <Section title="Teacher-Student Management" icon="��‍🏫">
+          <Section title="Teacher-Student Management" icon="🏫">
             <div className="space-y-6">
               {/* Teacher Selection */}
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
