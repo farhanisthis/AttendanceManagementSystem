@@ -33,10 +33,6 @@ export default function TeacherDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [teacherAssignments, setTeacherAssignments] = useState([]);
   const [mentorship, setMentorship] = useState(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [attendanceReport, setAttendanceReport] = useState(null);
-  const [showAllStudents, setShowAllStudents] = useState(false);
 
   const days = [
     { id: 1, name: "Monday", short: "Mon" },
@@ -99,148 +95,39 @@ export default function TeacherDashboard() {
 
   const loadTeacherProfile = async () => {
     try {
-      setIsLoadingProfile(true);
+      console.log("Loading teacher profile...");
       const { data } = await api.get(`/common/profile`);
+      console.log("Profile data received:", data);
       if (data) {
         if (data.teacherAssignments) {
+          console.log("Setting teacher assignments:", data.teacherAssignments);
           setTeacherAssignments(data.teacherAssignments);
         }
         if (data.mentorship) {
+          console.log("Setting mentorship:", data.mentorship);
           setMentorship(data.mentorship);
         }
       }
     } catch (error) {
       console.error("Error loading teacher profile:", error);
-      toast.error("Failed to load profile");
-    } finally {
-      setIsLoadingProfile(false);
     }
   };
 
-  const loadStudents = async (classOrBatch, timetableData = null) => {
-    try {
-      // Debug authentication state
-      console.log("=== AUTHENTICATION DEBUG ===");
-      console.log("User object:", user);
-      console.log("User ID:", user?._id);
-      console.log("User role:", user?.role);
-      console.log("Token exists:", !!localStorage.getItem("token"));
-      console.log(
-        "Token value:",
-        localStorage.getItem("token")?.substring(0, 20) + "..."
-      );
-      console.log("================================");
+  const loadStudents = async (classOrBatch) => {
+    const { data } = await api.get(`/common/students?teacherId=${user._id}`);
 
-      // Check if user is authenticated
-      if (!user || !user._id) {
-        console.error("User not authenticated - user:", user);
-        toast.error("Please login again");
-        setStudents([]);
-        return;
-      }
+    // Filter students by the selected class/batch
+    const filteredStudents = data.filter(
+      (student) => student.classOrBatch === classOrBatch
+    );
+    setStudents(filteredStudents);
 
-      // Check if token exists
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No authentication token found");
-        toast.error("Please login again");
-        setStudents([]);
-        return;
-      }
-
-      // Extract year and section from classOrBatch (format: "1st year - E1")
-      const yearMatch = classOrBatch.match(/^(.+?)\s+year/);
-      const sectionMatch = classOrBatch.match(/\s*-\s*(.+)$/);
-
-      let year = yearMatch ? yearMatch[1] + " year" : null;
-      let section = sectionMatch ? sectionMatch[1] : null;
-
-      // Alternative: try to extract from the full classOrBatch string
-      if (!year && classOrBatch.includes("year")) {
-        const parts = classOrBatch.split(" - ");
-        if (parts.length === 2) {
-          const yearPart = parts[0].trim();
-          const sectionPart = parts[1].trim();
-          if (yearPart.includes("year") && sectionPart) {
-            year = yearPart;
-            section = sectionPart;
-          }
-        }
-      }
-
-      // Get the subject ID from the timetable data passed as parameter or from selected state
-      const subjectId =
-        timetableData?.subjectId?._id || selected?.subjectId?._id;
-
-      console.log("=== STUDENT LOADING DEBUG ===");
-      console.log("Class/Batch:", classOrBatch);
-      console.log("Extracted Year:", year);
-      console.log("Extracted Section:", section);
-      console.log("Subject ID:", subjectId);
-      console.log("Selected Timetable:", selected);
-      console.log("Timetable Data Parameter:", timetableData);
-      console.log("================================");
-
-      // Show warning if teacher is trying to access a class they're not assigned to
-      if (year && section && subjectId) {
-        console.log(
-          "⚠️  NOTE: Students will be filtered by teacher's assigned year/section, not the selected class"
-        );
-        console.log(
-          "⚠️  This ensures teachers only see students from their assigned classes"
-        );
-      }
-
-      let url = `/common/students?teacherId=${user._id}`;
-      if (year && subjectId) {
-        // Pass the frontend year for debugging, but backend will use teacher's assignment
-        url += `&year=${encodeURIComponent(year)}&subjectId=${subjectId}`;
-        console.log("🔍 Frontend requesting students for:", {
-          year,
-          section,
-          subjectId,
-        });
-        console.log(
-          "🔍 Backend will filter by teacher's assigned year/section"
-        );
-      } else {
-        // Fallback to old method
-        url += `&classOrBatch=${encodeURIComponent(classOrBatch)}`;
-      }
-
-      console.log("Loading students with URL:", url);
-      console.log("User ID:", user._id);
-      console.log("Token exists:", !!token);
-
-      const { data } = await api.get(url);
-      console.log("Students loaded successfully:", data);
-      setStudents(data);
-
-      // Initialize with absent as default
-      const init = {};
-      data.forEach((s) => {
-        init[s._id] = "absent";
-      });
-      setMark(init);
-    } catch (error) {
-      console.error("Error loading students:", error);
-      console.error("Error details:", {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
-      });
-
-      // Handle specific error cases
-      if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please login again.");
-      } else if (error.response?.status === 500) {
-        toast.error("Server error. Please try again later.");
-      } else {
-        toast.error("Failed to load students");
-      }
-
-      setStudents([]);
-    }
+    // Initialize with absent as default
+    const init = {};
+    data.forEach((s) => {
+      init[s._id] = "absent";
+    });
+    setMark(init);
   };
 
   const checkExistingAttendance = async (timetableId, date) => {
@@ -260,40 +147,16 @@ export default function TeacherDashboard() {
       }
       return false;
     } catch (error) {
-      // No existing attendance found
+      console.log("No existing attendance found");
       return false;
     }
   };
 
   useEffect(() => {
-    console.log("=== TEACHER DASHBOARD MOUNT ===");
-    console.log("User from context:", user);
-    console.log("User ID:", user?._id);
-    console.log("User role:", user?.role);
-    console.log("LocalStorage user:", localStorage.getItem("user"));
-    console.log(
-      "LocalStorage token:",
-      localStorage.getItem("token")?.substring(0, 20) + "..."
-    );
-    console.log("================================");
-
     loadSlots(selectedDay);
     // Load teacher assignments
     if (user) {
       loadTeacherProfile();
-    } else {
-      console.warn("No user object found in context");
-      // Try to get user from localStorage as fallback
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        console.log("Found user in localStorage:", storedUser);
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          console.log("Parsed user:", parsedUser);
-        } catch (e) {
-          console.error("Error parsing stored user:", e);
-        }
-      }
     }
   }, [selectedDay, user]);
 
@@ -308,29 +171,9 @@ export default function TeacherDashboard() {
   }, [msg, isSubmitting]);
 
   const onSelect = async (tt) => {
-    // Check if user is available before proceeding
-    if (!user || !user._id) {
-      console.error("Cannot load students - user not authenticated");
-      toast.error("Please wait for authentication to complete");
-      return;
-    }
-
-    console.log("=== TIMETABLE SELECTION DEBUG ===");
-    console.log("Selected Timetable Object:", tt);
-    console.log("Timetable ID:", tt._id);
-    console.log("Class/Batch:", tt.classOrBatch);
-    console.log("Subject ID (raw):", tt.subjectId);
-    console.log("Subject ID (string):", tt.subjectId?._id);
-    console.log("Subject ID (toString):", tt.subjectId?.toString());
-    console.log("Full Subject Object:", tt.subjectId);
-    console.log("================================");
-
-    // Set the selected timetable first
     setSelected(tt);
     setMsg("");
-
-    // Load students immediately with the timetable data
-    await loadStudents(tt.classOrBatch, tt);
+    await loadStudents(tt.classOrBatch);
 
     // Check if attendance already exists for this date and timetable
     const hasExisting = await checkExistingAttendance(tt._id, date);
@@ -395,11 +238,9 @@ export default function TeacherDashboard() {
       status,
     }));
 
-    // Submit attendance data
-
     try {
       setIsSubmitting(true);
-      // Show loading state
+      toast.loading("Saving attendance...");
 
       const response = await api.post("/teacher/attendance/mark", {
         date,
@@ -407,95 +248,24 @@ export default function TeacherDashboard() {
         records,
       });
 
-      // Attendance saved successfully
       toast.success("Attendance saved successfully!");
       setIsEditing(true);
+
       // Refresh existing attendance
       await checkExistingAttendance(selected._id, date);
+
+      // Show success message with details
+      const presentCount = records.filter((r) => r.status === "present").length;
+      const absentCount = records.filter((r) => r.status === "absent").length;
+      toast.success(
+        `Attendance saved! ${presentCount} present, ${absentCount} absent`
+      );
     } catch (error) {
       console.error("Error saving attendance:", error);
       const errorMessage = getErrorMessage(error);
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const showAttendanceReport = () => {
-    if (!existingAttendance) return;
-
-    // Process attendance data to show present/absent students
-    const presentStudents = [];
-    const absentStudents = [];
-
-    existingAttendance.records.forEach((record) => {
-      const student = students.find((s) => s._id === record.studentId);
-      if (student) {
-        if (record.status === "present") {
-          presentStudents.push(student);
-        } else {
-          absentStudents.push(student);
-        }
-      }
-    });
-
-    setAttendanceReport({
-      date: date,
-      subject: selected.subjectId?.name,
-      class: selected.classOrBatch,
-      present: presentStudents,
-      absent: absentStudents,
-      total: students.length,
-    });
-    setShowReportModal(true);
-  };
-
-  const showAttendanceReportForSlot = async (slot) => {
-    try {
-      // Check if there's attendance data for this slot on today's date
-      const { data: attendanceData } = await api.get(
-        `/teacher/attendance/check?timetableId=${slot._id}&date=${todayISO()}`
-      );
-
-      if (!attendanceData) {
-        toast.error("No attendance data found for this class today");
-        return;
-      }
-
-      // Load students for this slot
-      const { data: slotStudents } = await api.get(
-        `/common/students?teacherId=${user._id}&year=${
-          slot.classOrBatch?.split(" - ")[0]
-        }&subjectId=${slot.subjectId._id}`
-      );
-
-      // Process attendance data
-      const presentStudents = [];
-      const absentStudents = [];
-
-      attendanceData.records.forEach((record) => {
-        const student = slotStudents.find((s) => s._id === record.studentId);
-        if (student) {
-          if (record.status === "present") {
-            presentStudents.push(student);
-          } else {
-            absentStudents.push(student);
-          }
-        }
-      });
-
-      setAttendanceReport({
-        date: todayISO(),
-        subject: slot.subjectId?.name,
-        class: slot.classOrBatch,
-        present: presentStudents,
-        absent: absentStudents,
-        total: slotStudents.length,
-      });
-      setShowReportModal(true);
-    } catch (error) {
-      console.error("Error loading attendance report for slot:", error);
-      toast.error("Failed to load attendance report");
     }
   };
 
@@ -516,16 +286,16 @@ export default function TeacherDashboard() {
         <p className="text-xl text-slate-600 max-w-2xl mx-auto">
           Manage your classes and mark student attendance efficiently
         </p>
+      </div>
 
-        {/* Loading State */}
-        {isLoadingProfile && (
-          <div className="mt-4">
-            <div className="inline-flex items-center gap-2 text-blue-600">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-              <span>Loading profile...</span>
-            </div>
-          </div>
-        )}
+      {/* Debug Info */}
+      <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 mb-4">
+        <h3 className="font-bold text-blue-800 mb-2">🔍 Debug Info</h3>
+        <div className="text-sm">
+          <p>Teacher Assignments: {teacherAssignments?.length || 0}</p>
+          <p>Mentorship: {mentorship ? "Present" : "None"}</p>
+          <p>User ID: {user?._id}</p>
+        </div>
       </div>
 
       {/* Teacher Assignments Section */}
@@ -618,33 +388,22 @@ export default function TeacherDashboard() {
 
             <div className="space-y-2">
               {sorted.map((tt) => (
-                <div key={tt._id} className="space-y-2">
-                  <button
-                    onClick={() => onSelect(tt)}
-                    className={`w-full text-left p-3 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                      selected?._id === tt._id
-                        ? "border-blue-500 bg-blue-50 text-blue-800"
-                        : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="font-medium">
-                      {tt.startTime} - {tt.endTime}
-                    </div>
-                    <div className="text-sm text-slate-600">
-                      {tt.subjectId?.name} • {tt.classOrBatch}
-                    </div>
-                  </button>
-
-                  {/* Attendance Report Button for this slot */}
-                  <button
-                    onClick={() => showAttendanceReportForSlot(tt)}
-                    className="w-full btn btn-sm btn-info"
-                    disabled={!tt._id}
-                    title="View attendance report for this class"
-                  >
-                    📊 Attendance Report
-                  </button>
-                </div>
+                <button
+                  key={tt._id}
+                  onClick={() => onSelect(tt)}
+                  className={`w-full text-left p-3 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                    selected?._id === tt._id
+                      ? "border-blue-500 bg-blue-50 text-blue-800"
+                      : "border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <div className="font-medium">
+                    {tt.startTime} - {tt.endTime}
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    {tt.subjectId?.name} • {tt.classOrBatch}
+                  </div>
+                </button>
               ))}
               {sorted.length === 0 && (
                 <div className="text-center text-slate-500 py-8">
@@ -697,62 +456,28 @@ export default function TeacherDashboard() {
                   </thead>
                   <tbody>
                     {students.length > 0 ? (
-                      <>
-                        {/* Show first 10 students or all if showAllStudents is true */}
-                        {(showAllStudents
-                          ? students
-                          : students.slice(0, 10)
-                        ).map((s) => (
-                          <tr key={s._id}>
-                            <td className="font-medium">{s.name}</td>
-                            <td className="text-slate-600">
-                              {s.enrollment || "Not provided"}
-                            </td>
-                            <td>
-                              <button
-                                onClick={() => toggleAttendance(s._id)}
-                                className={`btn btn-sm ${
-                                  mark[s._id] === "present"
-                                    ? "btn-success"
-                                    : "btn-error"
-                                }`}
-                              >
-                                {mark[s._id] === "present"
-                                  ? "✅ Present"
-                                  : "❌ Absent"}
-                              </button>
-                              {existingAttendance && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  Current:{" "}
-                                  {existingAttendance.records.find(
-                                    (r) => r.studentId === s._id
-                                  )?.status || "Not marked"}
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-
-                        {/* Show "See More" button if there are more than 10 students */}
-                        {students.length > 10 && (
-                          <tr>
-                            <td colSpan="3" className="text-center py-4">
-                              <button
-                                onClick={() =>
-                                  setShowAllStudents(!showAllStudents)
-                                }
-                                className="btn btn-outline btn-sm"
-                              >
-                                {showAllStudents
-                                  ? "Show Less"
-                                  : `See More (${
-                                      students.length - 10
-                                    } more students)`}
-                              </button>
-                            </td>
-                          </tr>
-                        )}
-                      </>
+                      students.map((s) => (
+                        <tr key={s._id}>
+                          <td className="font-medium">{s.name}</td>
+                          <td className="text-slate-600">
+                            {s.enrollment || "Not provided"}
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => toggleAttendance(s._id)}
+                              className={`btn btn-sm ${
+                                mark[s._id] === "present"
+                                  ? "btn-success"
+                                  : "btn-error"
+                              }`}
+                            >
+                              {mark[s._id] === "present"
+                                ? "✅ Present"
+                                : "❌ Absent"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
                     ) : (
                       <tr>
                         <td
@@ -812,185 +537,6 @@ export default function TeacherDashboard() {
           )}
         </Section>
       </div>
-
-      {/* Attendance Report Modal */}
-      {showReportModal && attendanceReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 text-white">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold">📊 Attendance Report</h3>
-                <button
-                  onClick={() => setShowReportModal(false)}
-                  className="text-white hover:text-blue-200 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="mt-2 text-blue-100">
-                <p className="font-medium">
-                  {attendanceReport.subject} • {attendanceReport.class}
-                </p>
-                <p className="text-sm">
-                  Date: {new Date(attendanceReport.date).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              {/* Summary Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {attendanceReport.present.length}
-                  </div>
-                  <div className="text-green-700">Present</div>
-                </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-red-600">
-                    {attendanceReport.absent.length}
-                  </div>
-                  <div className="text-red-700">Absent</div>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {attendanceReport.total}
-                  </div>
-                  <div className="text-blue-700">Total</div>
-                </div>
-              </div>
-
-              {/* Present Students */}
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold text-green-700 mb-3 flex items-center gap-2">
-                  ✅ Present Students ({attendanceReport.present.length})
-                </h4>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  {attendanceReport.present.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {attendanceReport.present.map((student, index) => (
-                        <div
-                          key={student._id}
-                          className="bg-white rounded-lg p-3 border border-green-200"
-                        >
-                          <div className="font-medium text-green-800">
-                            {student.name}
-                          </div>
-                          <div className="text-sm text-green-600">
-                            {student.enrollment}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-green-600 text-center py-4">
-                      No students present
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Absent Students */}
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold text-red-700 mb-3 flex items-center gap-2">
-                  ❌ Absent Students ({attendanceReport.absent.length})
-                </h4>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  {attendanceReport.absent.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {attendanceReport.absent.map((student, index) => (
-                        <div
-                          key={student._id}
-                          className="bg-white rounded-lg p-3 border border-red-200"
-                        >
-                          <div className="font-medium text-red-800">
-                            {student.name}
-                          </div>
-                          <div className="text-sm text-red-600">
-                            {student.enrollment}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-red-600 text-center py-4">
-                      No students absent
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Attendance Percentage */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-gray-800">
-                  {attendanceReport.total > 0
-                    ? Math.round(
-                        (attendanceReport.present.length /
-                          attendanceReport.total) *
-                          100
-                      )
-                    : 0}
-                  %
-                </div>
-                <div className="text-gray-600">Attendance Rate</div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
-              <button
-                onClick={() => setShowReportModal(false)}
-                className="btn btn-outline"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  // Generate and download report
-                  const reportData = {
-                    date: attendanceReport.date,
-                    subject: attendanceReport.subject,
-                    class: attendanceReport.class,
-                    present: attendanceReport.present.map((s) => ({
-                      name: s.name,
-                      enrollment: s.enrollment,
-                    })),
-                    absent: attendanceReport.absent.map((s) => ({
-                      name: s.name,
-                      enrollment: s.enrollment,
-                    })),
-                    total: attendanceReport.total,
-                    attendanceRate:
-                      attendanceReport.total > 0
-                        ? Math.round(
-                            (attendanceReport.present.length /
-                              attendanceReport.total) *
-                              100
-                          )
-                        : 0,
-                  };
-
-                  const blob = new Blob([JSON.stringify(reportData, null, 2)], {
-                    type: "application/json",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `attendance-report-${attendanceReport.date}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                  toast.success("Report downloaded successfully!");
-                }}
-                className="btn btn-primary"
-              >
-                📥 Download Report
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

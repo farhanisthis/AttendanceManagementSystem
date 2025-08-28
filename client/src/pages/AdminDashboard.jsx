@@ -97,27 +97,52 @@ export default function AdminDashboard() {
     semester: "",
   });
 
+  // Predefined time slots for 1-hour periods (12-hour format with AM/PM) - Only half-hour slots
+  const timeSlots = [
+    { label: "8:30 AM - 9:30 AM", startTime: "08:30", endTime: "09:30" },
+    { label: "9:30 AM - 10:30 AM", startTime: "09:30", endTime: "10:30" },
+    { label: "10:30 AM - 11:30 AM", startTime: "10:30", endTime: "11:30" },
+    { label: "11:30 AM - 12:30 PM", startTime: "11:30", endTime: "12:30" },
+    { label: "12:30 PM - 1:30 PM", startTime: "12:30", endTime: "13:30" },
+    { label: "1:30 PM - 2:30 PM", startTime: "13:30", endTime: "14:30" },
+    { label: "2:30 PM - 3:30 PM", startTime: "14:30", endTime: "15:30" },
+    { label: "3:30 PM - 4:30 PM", startTime: "15:30", endTime: "16:30" },
+    { label: "4:30 PM - 5:30 PM", startTime: "16:30", endTime: "17:30" },
+  ];
+
   const showAttendanceReport = (attendanceRecord) => {
     try {
-      // Process attendance data to show present/absent students
+      console.log("Processing attendance record:", attendanceRecord);
+
+      // Process attendance data to show present/absent students with names
       const presentStudents = [];
       const absentStudents = [];
 
       if (attendanceRecord.records && attendanceRecord.records.length > 0) {
         attendanceRecord.records.forEach((record) => {
+          // Find student name from students array
+          const student = students.find((s) => s._id === record.studentId);
+          const studentInfo = {
+            studentId: record.studentId,
+            studentName: student ? student.name : `Student ${record.studentId}`,
+            enrollment: student ? student.enrollment : "N/A",
+            status: record.status,
+          };
+
           if (record.status === "present") {
-            presentStudents.push({
-              studentId: record.studentId,
-              status: record.status,
-            });
+            presentStudents.push(studentInfo);
           } else {
-            absentStudents.push({
-              studentId: record.studentId,
-              status: record.status,
-            });
+            absentStudents.push(studentInfo);
           }
         });
       }
+
+      console.log(
+        "Processed students - Present:",
+        presentStudents,
+        "Absent:",
+        absentStudents
+      );
 
       setAttendanceReport({
         date: attendanceRecord.date,
@@ -176,29 +201,24 @@ export default function AdminDashboard() {
       }
 
       try {
-        console.log("Loading attendance data...");
         const attRes = await api.get("/admin/attendance");
-        console.log("Attendance response:", attRes.data);
-        setAttendance(attRes.data);
+
+        if (attRes.data && Array.isArray(attRes.data)) {
+          setAttendance(attRes.data);
+        } else {
+          setAttendance([]);
+        }
       } catch (error) {
         console.error("Attendance API failed:", error);
-        console.error("Error details:", {
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message,
-        });
 
         // Handle 404 (no attendance records) gracefully
         if (error.response?.status === 404) {
-          console.log(
-            "No attendance records found - this is normal for new systems"
-          );
           setAttendance([]);
           return;
         }
 
         // Show error toast for other errors
-        toast.error("Failed to load attendance");
+        toast.error(`Failed to load attendance: ${error.message}`);
         setAttendance([]);
       }
     } catch (error) {
@@ -697,8 +717,8 @@ export default function AdminDashboard() {
       {
         subjectId: "",
         dayOfWeek: 1,
-        startTime: "10:00",
-        endTime: "11:00",
+        startTime: "10:30",
+        endTime: "11:30",
         slotType: "theory",
         room: "",
         notes: "",
@@ -1350,7 +1370,7 @@ export default function AdminDashboard() {
                       key={index}
                       className="p-3 border border-slate-200 rounded-lg bg-slate-50"
                     >
-                      <div className="grid grid-cols-6 gap-2">
+                      <div className="grid grid-cols-5 gap-2">
                         <select
                           className="select select-bordered select-sm"
                           value={slot.subjectId}
@@ -1382,23 +1402,40 @@ export default function AdminDashboard() {
                           <option value="0">Sun</option>
                         </select>
 
-                        <input
-                          className="input input-bordered input-sm"
-                          type="time"
-                          value={slot.startTime}
-                          onChange={(e) =>
-                            updateBulkSlot(index, "startTime", e.target.value)
+                        <select
+                          className="select select-bordered select-sm"
+                          value={
+                            timeSlots.find(
+                              (ts) =>
+                                ts.startTime === slot.startTime &&
+                                ts.endTime === slot.endTime
+                            )?.label || ""
                           }
-                        />
-
-                        <input
-                          className="input input-bordered input-sm"
-                          type="time"
-                          value={slot.endTime}
-                          onChange={(e) =>
-                            updateBulkSlot(index, "endTime", e.target.value)
-                          }
-                        />
+                          onChange={(e) => {
+                            const selectedSlot = timeSlots.find(
+                              (ts) => ts.label === e.target.value
+                            );
+                            if (selectedSlot) {
+                              updateBulkSlot(
+                                index,
+                                "startTime",
+                                selectedSlot.startTime
+                              );
+                              updateBulkSlot(
+                                index,
+                                "endTime",
+                                selectedSlot.endTime
+                              );
+                            }
+                          }}
+                        >
+                          <option value="">Select Time Slot</option>
+                          {timeSlots.map((timeSlot) => (
+                            <option key={timeSlot.label} value={timeSlot.label}>
+                              {timeSlot.label}
+                            </option>
+                          ))}
+                        </select>
 
                         <select
                           className="select select-bordered select-sm"
@@ -1454,7 +1491,7 @@ export default function AdminDashboard() {
             </div>
           </Section>
 
-          <Section title="Teachers Management" icon="👨‍🏫">
+          <Section title="Teaching & Mentorship Management" icon="👨‍🏫">
             {/* Search and Filter */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
               <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -1466,19 +1503,16 @@ export default function AdminDashboard() {
                     <input
                       type="text"
                       placeholder="Search by name or email..."
-                      className="input input-bordered w-full pl-10 bg-white"
+                      className=" input input-bordered pl-10 bg-white"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                      🔍
-                    </span>
                   </div>
                 </div>
 
                 <div className="w-full sm:w-auto">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Filter by Role
+                    Filter by Assignment Type
                   </label>
                   <select
                     className="select select-bordered bg-white"
@@ -1486,8 +1520,12 @@ export default function AdminDashboard() {
                     onChange={(e) => setFilterRole(e.target.value)}
                   >
                     <option value="all">All Roles</option>
-                    <option value="teacher">Teachers Only</option>
-                    <option value="student">Students Only</option>
+                    <option value="teacher">
+                      Teaching Only (No Mentorship)
+                    </option>
+                    <option value="student">
+                      Mentorship Only (No Teaching)
+                    </option>
                   </select>
                 </div>
 
@@ -1508,7 +1546,7 @@ export default function AdminDashboard() {
                       onClick={() => setFilterRole("all")}
                       disabled={filterRole === "all"}
                     >
-                      Clear Filter
+                      Show All Types
                     </button>
                   </div>
                 </div>
@@ -1528,7 +1566,9 @@ export default function AdminDashboard() {
                         {" "}
                         • Filtered by:{" "}
                         <span className="font-medium text-gray-800">
-                          {filterRole}
+                          {filterRole === "teacher"
+                            ? "Teaching Only"
+                            : "Mentorship Only"}
                         </span>
                       </span>
                     )}
@@ -1560,16 +1600,45 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {(() => {
-                    const filteredTeachers = teachers.filter((t) => {
-                      if (searchTerm) {
-                        const term = searchTerm.toLowerCase();
-                        return (
-                          t.name.toLowerCase().includes(term) ||
-                          t.email.toLowerCase().includes(term)
-                        );
+                    // First filter by role
+                    let roleFilteredTeachers = teachers;
+                    if (filterRole === "teacher") {
+                      // Show only teachers with teaching assignments BUT NO mentorship
+                      roleFilteredTeachers = teachers.filter(
+                        (t) =>
+                          t.teacherAssignments &&
+                          t.teacherAssignments.some(
+                            (a) => a.role === "teaching"
+                          ) &&
+                          (!t.mentorship || !t.mentorship.classOrBatch)
+                      );
+                    } else if (filterRole === "student") {
+                      // Show only teachers with mentorship assignments BUT NO teaching
+                      roleFilteredTeachers = teachers.filter(
+                        (t) =>
+                          t.mentorship &&
+                          t.mentorship.classOrBatch &&
+                          (!t.teacherAssignments ||
+                            !t.teacherAssignments.some(
+                              (a) => a.role === "teaching"
+                            ))
+                      );
+                    }
+                    // filterRole === "all" shows all teachers
+
+                    // Then filter by search term
+                    const filteredTeachers = roleFilteredTeachers.filter(
+                      (t) => {
+                        if (searchTerm) {
+                          const term = searchTerm.toLowerCase();
+                          return (
+                            t.name.toLowerCase().includes(term) ||
+                            t.email.toLowerCase().includes(term)
+                          );
+                        }
+                        return true;
                       }
-                      return true;
-                    });
+                    );
 
                     if (filteredTeachers.length === 0) {
                       return (
@@ -1577,6 +1646,10 @@ export default function AdminDashboard() {
                           <td colSpan="5" className="text-center opacity-70">
                             {searchTerm
                               ? "No teachers found matching your search"
+                              : filterRole === "student"
+                              ? "No teachers with mentorship only found"
+                              : filterRole === "teacher"
+                              ? "No teachers with teaching only found"
                               : "No teachers added yet"}
                           </td>
                         </tr>
@@ -1790,28 +1863,66 @@ export default function AdminDashboard() {
               </table>
 
               {/* Pagination for Teachers */}
-              {teachers.length > 10 && (
-                <div className="mt-6 flex justify-center">
-                  <div className="bg-white rounded-lg border border-gray-200 px-4 py-3 shadow-sm">
-                    <button
-                      className="btn btn-outline btn-sm border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
-                      onClick={() => setShowAllTeachers(!showAllTeachers)}
-                    >
-                      {showAllTeachers ? (
-                        <>
-                          <span>👁️</span>
-                          Show Less
-                        </>
-                      ) : (
-                        <>
-                          <span>📋</span>
-                          Show All ({teachers.length})
-                        </>
-                      )}
-                    </button>
+              {(() => {
+                // First filter by role
+                let roleFilteredTeachers = teachers;
+                if (filterRole === "teacher") {
+                  // Show only teachers with teaching assignments BUT NO mentorship
+                  roleFilteredTeachers = teachers.filter(
+                    (t) =>
+                      t.teacherAssignments &&
+                      t.teacherAssignments.some((a) => a.role === "teaching") &&
+                      (!t.mentorship || !t.mentorship.classOrBatch)
+                  );
+                } else if (filterRole === "student") {
+                  // Show only teachers with mentorship assignments BUT NO teaching
+                  roleFilteredTeachers = teachers.filter(
+                    (t) =>
+                      t.mentorship &&
+                      t.mentorship.classOrBatch &&
+                      (!t.teacherAssignments ||
+                        !t.teacherAssignments.some(
+                          (a) => a.role === "teaching"
+                        ))
+                  );
+                }
+                // filterRole === "all" shows all teachers
+
+                // Then filter by search term
+                const filteredTeachers = roleFilteredTeachers.filter((t) => {
+                  if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    return (
+                      t.name.toLowerCase().includes(term) ||
+                      t.email.toLowerCase().includes(term)
+                    );
+                  }
+                  return true;
+                });
+
+                return filteredTeachers.length > 10 ? (
+                  <div className="mt-6 flex justify-center">
+                    <div className="bg-white rounded-lg border border-gray-200 px-4 py-3 shadow-sm">
+                      <button
+                        className="btn btn-outline btn-sm border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400"
+                        onClick={() => setShowAllTeachers(!showAllTeachers)}
+                      >
+                        {showAllTeachers ? (
+                          <>
+                            <span>👁️</span>
+                            Show Less
+                          </>
+                        ) : (
+                          <>
+                            <span>📋</span>
+                            Show All ({filteredTeachers.length})
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : null;
+              })()}
             </div>
 
             {/* Teacher Assignment Modal */}
@@ -2011,191 +2122,257 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {students.length > 0 ? (
-                    (showAllStudents ? students : students.slice(0, 10)).map(
-                      (s) => (
-                        <tr key={s._id}>
-                          <td>
-                            {editingUser?._id === s._id ? (
-                              <input
-                                className="input input-bordered input-sm"
-                                value={editForm.name}
-                                onChange={(e) =>
-                                  setEditForm((f) => ({
-                                    ...f,
-                                    name: e.target.value,
-                                  }))
-                                }
-                              />
-                            ) : (
-                              s.name
-                            )}
-                          </td>
-                          <td>
-                            {editingUser?._id === s._id ? (
-                              <input
-                                className="input input-bordered input-sm"
-                                value={editForm.email}
-                                onChange={(e) =>
-                                  setEditForm((f) => ({
-                                    ...f,
-                                    email: e.target.value,
-                                  }))
-                                }
-                              />
-                            ) : (
-                              s.email
-                            )}
-                          </td>
-                          <td>
-                            {editingUser?._id === s._id ? (
-                              <input
-                                className="input input-bordered input-sm"
-                                placeholder="Enrollment"
-                                value={editForm.enrollment}
-                                onChange={(e) =>
-                                  setEditForm((f) => ({
-                                    ...f,
-                                    enrollment: e.target.value,
-                                  }))
-                                }
-                              />
-                            ) : (
-                              s.enrollment || "Not provided"
-                            )}
-                          </td>
-                          <td>
-                            {editingUser?._id === s._id ? (
-                              <input
-                                className="input input-bordered input-sm"
-                                placeholder="Phone"
-                                value={editForm.phone}
-                                onChange={(e) =>
-                                  setEditForm((f) => ({
-                                    ...f,
-                                    phone: e.target.value,
-                                  }))
-                                }
-                              />
-                            ) : (
-                              s.phone || "Not provided"
-                            )}
-                          </td>
+                  {(() => {
+                    // First filter by role
+                    let roleFilteredStudents = students;
+                    if (filterRole === "student") {
+                      // Show only students (mentorship context)
+                      roleFilteredStudents = students;
+                    } else if (filterRole === "teacher") {
+                      // Show only students assigned to teaching classes
+                      roleFilteredStudents = students.filter(
+                        (s) => s.classOrBatch && s.classOrBatch.includes(" - ")
+                      );
+                    }
+                    // filterRole === "all" shows all students
 
-                          <td>
-                            {editingUser?._id === s._id ? (
-                              <select
-                                className="select select-bordered select-sm"
-                                value={editForm.enrollment}
-                                onChange={(e) =>
-                                  setEditForm((f) => ({
-                                    ...f,
-                                    enrollment: e.target.value,
-                                  }))
-                                }
-                              >
-                                <option value="">Select Class/Batch</option>
-                                <option value="1st year - E1">
-                                  1st Year - E1
-                                </option>
-                                <option value="1st year - E2">
-                                  1st Year - E2
-                                </option>
-                                <option value="1st year - M1">
-                                  1st Year - M1
-                                </option>
-                                <option value="1st year - M2">
-                                  1st Year - M2
-                                </option>
-                                <option value="2nd year - E1">
-                                  2nd Year - E1
-                                </option>
-                                <option value="2nd year - E2">
-                                  2nd Year - E2
-                                </option>
-                                <option value="2nd year - M1">
-                                  2nd Year - M1
-                                </option>
-                                <option value="2nd year - M2">
-                                  2nd Year - M2
-                                </option>
-                                <option value="3rd year - E1">
-                                  3rd Year - E1
-                                </option>
-                                <option value="3rd year - E2">
-                                  3rd Year - E2
-                                </option>
-                                <option value="3rd year - M1">
-                                  3rd Year - M1
-                                </option>
-                                <option value="3rd year - M2">
-                                  3rd Year - M2
-                                </option>
-                              </select>
-                            ) : (
-                              s.enrollment || "Not assigned"
-                            )}
-                          </td>
+                    // Then filter by search term
+                    const filteredStudents = roleFilteredStudents.filter(
+                      (s) => {
+                        if (searchTerm) {
+                          const term = searchTerm.toLowerCase();
+                          return (
+                            s.name.toLowerCase().includes(term) ||
+                            s.email.toLowerCase().includes(term) ||
+                            (s.enrollment &&
+                              s.enrollment.toLowerCase().includes(term))
+                          );
+                        }
+                        return true;
+                      }
+                    );
 
-                          <td>
-                            {editingUser?._id === s._id ? (
-                              <div className="flex gap-1">
-                                <button
-                                  className="btn btn-xs btn-success"
-                                  onClick={saveEditUser}
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  className="btn btn-xs btn-ghost"
-                                  onClick={cancelEdit}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex gap-1">
-                                <button
-                                  className="btn btn-xs btn-outline"
-                                  onClick={() => startEditUser(s)}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  className="btn btn-xs btn-error"
-                                  onClick={() => deleteUser(s._id)}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            )}
+                    if (filteredStudents.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan="6" className="text-center opacity-70">
+                            {searchTerm
+                              ? "No students found matching your search"
+                              : filterRole === "teacher"
+                              ? "No students assigned to teaching classes found"
+                              : filterRole === "student"
+                              ? "No students for mentorship found"
+                              : "No students added yet"}
                           </td>
                         </tr>
-                      )
-                    )
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="text-center opacity-70">
-                        No students added yet
-                      </td>
-                    </tr>
-                  )}
+                      );
+                    }
+
+                    return (
+                      showAllStudents
+                        ? filteredStudents
+                        : filteredStudents.slice(0, 10)
+                    ).map((s) => (
+                      <tr key={s._id}>
+                        <td>
+                          {editingUser?._id === s._id ? (
+                            <input
+                              className="input input-bordered input-sm"
+                              value={editForm.name}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  name: e.target.value,
+                                }))
+                              }
+                            />
+                          ) : (
+                            s.name
+                          )}
+                        </td>
+                        <td>
+                          {editingUser?._id === s._id ? (
+                            <input
+                              className="input input-bordered input-sm"
+                              value={editForm.email}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  email: e.target.value,
+                                }))
+                              }
+                            />
+                          ) : (
+                            s.email
+                          )}
+                        </td>
+                        <td>
+                          {editingUser?._id === s._id ? (
+                            <input
+                              className="input input-bordered input-sm"
+                              placeholder="Enrollment"
+                              value={editForm.enrollment}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  enrollment: e.target.value,
+                                }))
+                              }
+                            />
+                          ) : (
+                            s.enrollment || "Not provided"
+                          )}
+                        </td>
+                        <td>
+                          {editingUser?._id === s._id ? (
+                            <input
+                              className="input input-bordered input-sm"
+                              placeholder="Phone"
+                              value={editForm.phone}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  phone: e.target.value,
+                                }))
+                              }
+                            />
+                          ) : (
+                            s.phone || "Not provided"
+                          )}
+                        </td>
+
+                        <td>
+                          {editingUser?._id === s._id ? (
+                            <select
+                              className="select select-bordered select-sm"
+                              value={editForm.enrollment}
+                              onChange={(e) =>
+                                setEditForm((f) => ({
+                                  ...f,
+                                  enrollment: e.target.value,
+                                }))
+                              }
+                            >
+                              <option value="">Select Class/Batch</option>
+                              <option value="1st year - E1">
+                                1st Year - E1
+                              </option>
+                              <option value="1st year - E2">
+                                1st Year - E2
+                              </option>
+                              <option value="1st year - M1">
+                                1st Year - M1
+                              </option>
+                              <option value="1st year - M2">
+                                1st Year - M2
+                              </option>
+                              <option value="2nd year - E1">
+                                2nd Year - E1
+                              </option>
+                              <option value="2nd year - E2">
+                                2nd Year - E2
+                              </option>
+                              <option value="2nd year - M1">
+                                2nd Year - M1
+                              </option>
+                              <option value="2nd year - M2">
+                                2nd Year - M2
+                              </option>
+                              <option value="3rd year - E1">
+                                3rd Year - E1
+                              </option>
+                              <option value="3rd year - E2">
+                                3rd Year - E2
+                              </option>
+                              <option value="3rd year - M1">
+                                3rd Year - M1
+                              </option>
+                              <option value="3rd year - M2">
+                                3rd Year - M2
+                              </option>
+                            </select>
+                          ) : (
+                            s.enrollment || "Not assigned"
+                          )}
+                        </td>
+
+                        <td>
+                          {editingUser?._id === s._id ? (
+                            <div className="flex gap-1">
+                              <button
+                                className="btn btn-xs btn-success"
+                                onClick={saveEditUser}
+                              >
+                                Save
+                              </button>
+                              <button
+                                className="btn btn-xs btn-ghost"
+                                onClick={cancelEdit}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-1">
+                              <button
+                                className="btn btn-xs btn-outline"
+                                onClick={() => startEditUser(s)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="btn btn-xs btn-error"
+                                onClick={() => deleteUser(s._id)}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ));
+                  })()}
                 </tbody>
               </table>
 
               {/* Pagination for Students */}
-              {students.length > 10 && (
-                <div className="mt-4 flex justify-center">
-                  <button
-                    className="btn btn-outline btn-sm"
-                    onClick={() => setShowAllStudents(!showAllStudents)}
-                  >
-                    {showAllStudents
-                      ? "Show Less"
-                      : `Show All (${students.length})`}
-                  </button>
-                </div>
-              )}
+              {(() => {
+                // First filter by role
+                let roleFilteredStudents = students;
+                if (filterRole === "student") {
+                  roleFilteredStudents = students;
+                } else if (filterRole === "teacher") {
+                  roleFilteredStudents = [];
+                }
+                // filterRole === "all" shows all students
+
+                // Then filter by search term
+                const filteredStudents = roleFilteredStudents.filter((s) => {
+                  if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    return (
+                      s.name.toLowerCase().includes(term) ||
+                      s.email.toLowerCase().includes(term) ||
+                      (s.enrollment &&
+                        s.enrollment.toLowerCase().includes(term))
+                    );
+                  }
+                  return true;
+                });
+
+                return filteredStudents.length > 10 ? (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      className="btn btn-outline btn-sm"
+                      onClick={() => setShowAllStudents(!showAllStudents)}
+                    >
+                      {showAllStudents
+                        ? "Show Less"
+                        : `Show All (${filteredStudents.length})`}
+                    </button>
+                  </div>
+                ) : null;
+              })()}
             </div>
           </Section>
 
@@ -2546,7 +2723,7 @@ export default function AdminDashboard() {
 
       {activeTab === "teacher-students" && (
         <div className="space-y-8">
-          <Section title="Teacher-Student Management" icon="👨‍🏫">
+          <Section title="Teacher-Student Management" icon="��‍🏫">
             <div className="space-y-6">
               {/* Teacher Selection */}
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -2557,9 +2734,11 @@ export default function AdminDashboard() {
                   <select
                     className="select select-bordered w-full"
                     value={selectedTeacherForStudents}
-                    onChange={(e) =>
-                      setSelectedTeacherForStudents(e.target.value)
-                    }
+                    onChange={(e) => {
+                      setSelectedTeacherForStudents(e.target.value);
+                      setSelectedSubjectForStudents("");
+                      setSelectedYearForStudents("");
+                    }}
                   >
                     <option value="">Select Teacher</option>
                     {teachers.map((teacher) => (
@@ -2571,53 +2750,54 @@ export default function AdminDashboard() {
 
                   <select
                     className="select select-bordered w-full"
-                    value={selectedSubjectForStudents}
-                    onChange={(e) =>
-                      setSelectedSubjectForStudents(e.target.value)
-                    }
+                    value={selectedYearForStudents}
+                    onChange={(e) => {
+                      setSelectedYearForStudents(e.target.value);
+                      // Automatically find and set the subject for this teacher and year
+                      if (selectedTeacherForStudents && e.target.value) {
+                        const teacher = teachers.find(
+                          (t) => t._id === selectedTeacherForStudents
+                        );
+                        const assignment = teacher?.teacherAssignments?.find(
+                          (assignment) => assignment.year === e.target.value
+                        );
+                        if (assignment) {
+                          const subject = subjects.find(
+                            (s) => s._id === assignment.subjectId
+                          );
+                          if (subject) {
+                            setSelectedSubjectForStudents(subject._id);
+                          }
+                        }
+                      }
+                    }}
                     disabled={!selectedTeacherForStudents}
                   >
-                    <option value="">Select Subject</option>
-                    {selectedTeacherForStudents &&
-                      subjects
-                        .filter((subject) => {
-                          const teacher = teachers.find(
-                            (t) => t._id === selectedTeacherForStudents
-                          );
-                          return teacher?.teacherAssignments?.some(
-                            (assignment) => assignment.subjectId === subject._id
-                          );
-                        })
-                        .map((subject) => (
-                          <option key={subject._id} value={subject._id}>
-                            {subject.name} ({subject.code})
-                          </option>
-                        ))}
+                    <option value="">Select Year</option>
+                    {selectedTeacherForStudents && (
+                      <>
+                        <option value="1st year">1st Year</option>
+                        <option value="2nd year">2nd Year</option>
+                        <option value="3rd year">3rd Year</option>
+                      </>
+                    )}
                   </select>
 
-                  <select
-                    className="select select-bordered w-full"
-                    value={selectedYearForStudents}
-                    onChange={(e) => setSelectedYearForStudents(e.target.value)}
-                    disabled={!selectedSubjectForStudents}
-                  >
-                    <option value="">Select Year</option>
-                    {selectedSubjectForStudents &&
-                      subjects
-                        .filter(
-                          (subject) =>
-                            subject._id === selectedSubjectForStudents
-                        )
-                        .map((subject) => subject.year)
-                        .filter(
-                          (year, index, arr) => arr.indexOf(year) === index
-                        )
-                        .map((year) => (
-                          <option key={year} value={year}>
-                            {year}
-                          </option>
-                        ))}
-                  </select>
+                  <div className="select select-bordered w-full bg-gray-100 flex items-center justify-center">
+                    {selectedTeacherForStudents &&
+                    selectedYearForStudents &&
+                    selectedSubjectForStudents ? (
+                      <span className="text-gray-700 font-medium">
+                        {subjects.find(
+                          (s) => s._id === selectedSubjectForStudents
+                        )?.name || "Subject not found"}
+                      </span>
+                    ) : (
+                      <span className="text-gray-500">
+                        Subject will be shown here
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <button
@@ -2729,85 +2909,100 @@ export default function AdminDashboard() {
           </div>
 
           <Section title="Attendance Records" icon="📊">
-            <div className="overflow-x-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Subject</th>
-                    <th>Teacher</th>
-                    <th>Class</th>
-                    <th>Students Present</th>
-                    <th>Students Absent</th>
-                    <th>Total Students</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendance.length > 0 ? (
-                    attendance.map((att) => {
-                      const presentCount = att.records.filter(
-                        (r) => r.status === "present"
-                      ).length;
-                      const absentCount = att.records.filter(
-                        (r) => r.status === "absent"
-                      ).length;
-                      const totalCount = att.records.length;
-
-                      return (
-                        <tr key={att._id}>
-                          <td className="font-medium">
-                            {new Date(att.date).toLocaleDateString()}
-                          </td>
-                          <td>{att.subjectId?.name || "N/A"}</td>
-                          <td>{att.teacherId?.name || "N/A"}</td>
-                          <td>{att.classOrBatch}</td>
-                          <td>
-                            <span className="badge badge-success">
-                              {presentCount}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="badge badge-error">
-                              {absentCount}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="badge badge-outline">
-                              {totalCount}
-                            </span>
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-xs btn-info"
-                              onClick={() => showAttendanceReport(att)}
-                              title="View detailed attendance report"
-                            >
-                              📊 Report
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div className="text-gray-600">Loading attendance data...</div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="table">
+                  <thead>
                     <tr>
-                      <td colSpan="7" className="text-center opacity-70">
-                        <div className="py-8">
-                          <div className="text-4xl mb-2">📊</div>
-                          <div className="text-lg font-medium text-gray-600 mb-2">
-                            No Attendance Records Yet
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            Attendance records will appear here once teachers
-                            start marking attendance
-                          </div>
-                        </div>
-                      </td>
+                      <th>Date</th>
+                      <th>Subject</th>
+                      <th>Teacher</th>
+                      <th>Class</th>
+                      <th>Students Present</th>
+                      <th>Students Absent</th>
+                      <th>Total Students</th>
+                      <th>Actions</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {attendance.length > 0 ? (
+                      attendance.map((att) => {
+                        const presentCount = att.records.filter(
+                          (r) => r.status === "present"
+                        ).length;
+                        const absentCount = att.records.filter(
+                          (r) => r.status === "absent"
+                        ).length;
+                        const totalCount = att.records.length;
+
+                        return (
+                          <tr key={att._id}>
+                            <td className="font-medium">
+                              {new Date(att.date).toLocaleDateString()}
+                            </td>
+                            <td>{att.subjectId?.name || "N/A"}</td>
+                            <td>{att.teacherId?.name || "N/A"}</td>
+                            <td>{att.classOrBatch}</td>
+                            <td>
+                              <span className="badge badge-success">
+                                {presentCount}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="badge badge-error">
+                                {absentCount}
+                              </span>
+                            </td>
+                            <td>
+                              <span className="badge badge-outline">
+                                {totalCount}
+                              </span>
+                            </td>
+                            <td>
+                              <button
+                                className="btn btn-xs btn-info"
+                                onClick={() => showAttendanceReport(att)}
+                                title="View detailed attendance report"
+                              >
+                                📊 Report
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan="8" className="text-center opacity-70">
+                          <div className="py-8">
+                            <div className="text-4xl mb-2">📊</div>
+                            <div className="text-lg font-medium text-gray-600 mb-2">
+                              No Attendance Records Yet
+                            </div>
+                            <div className="text-sm text-gray-500 mb-4">
+                              Attendance records will appear here once teachers
+                              start marking attendance for their classes.
+                            </div>
+                            <div className="text-xs text-gray-400 bg-gray-50 p-3 rounded-lg border">
+                              <strong>Debug Info:</strong>
+                              <br />• Total Students: {students.length}
+                              <br />• Total Teachers: {teachers.length}
+                              <br />• Total Subjects: {subjects.length}
+                              <br />• Total Timetable Slots: {timetable.length}
+                              <br />• Attendance Records: {attendance.length}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </Section>
         </div>
       )}
@@ -2876,9 +3071,12 @@ export default function AdminDashboard() {
                           className="bg-white rounded-lg p-3 border border-green-200"
                         >
                           <div className="font-medium text-green-800">
-                            Student ID: {student.studentId}
+                            {student.studentName}
                           </div>
                           <div className="text-sm text-green-600">
+                            Enrollment: {student.enrollment}
+                          </div>
+                          <div className="text-xs text-green-500">
                             Status: {student.status}
                           </div>
                         </div>
@@ -2906,9 +3104,12 @@ export default function AdminDashboard() {
                           className="bg-white rounded-lg p-3 border border-red-200"
                         >
                           <div className="font-medium text-red-800">
-                            Student ID: {student.studentId}
+                            {student.studentName}
                           </div>
                           <div className="text-sm text-red-600">
+                            Enrollment: {student.enrollment}
+                          </div>
+                          <div className="text-xs text-red-500">
                             Status: {student.status}
                           </div>
                         </div>

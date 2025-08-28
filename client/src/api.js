@@ -2,27 +2,32 @@ import axios from "axios";
 
 // Determine the API base URL based on environment
 const getApiBaseUrl = () => {
-  // Force production backend URL for now
+  // Production backend URL - this should match your render.yaml
   const productionUrl = "https://attendancemanagementsystem-7t71.onrender.com";
 
-  if (import.meta.env.VITE_API_URL) {
-    console.log("Using VITE_API_URL:", import.meta.env.VITE_API_URL);
-    return import.meta.env.VITE_API_URL;
-  }
+  // Check if we're running on localhost (more reliable than import.meta.env.DEV)
+  const isLocalhost =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname.includes("localhost") ||
+    import.meta.env.DEV;
 
-  // Development fallback
-  if (import.meta.env.DEV) {
-    console.log("Using development URL: http://localhost:4000");
+  if (isLocalhost) {
+    console.log("🛠️ Using development URL: http://localhost:4000");
+    console.log("📍 Current hostname:", window.location.hostname);
+    console.log("🔧 DEV mode:", import.meta.env.DEV);
     return "http://localhost:4000";
   }
 
-  // Production fallback - update this with your actual backend URL
-  console.log("Using production URL:", productionUrl);
+  // Production fallback
+  console.log("🚀 Using production URL:", productionUrl);
+  console.log("📍 Current hostname:", window.location.hostname);
+  console.log("🔧 DEV mode:", import.meta.env.DEV);
   return productionUrl;
 };
 
 const api = axios.create({
-  baseURL: getApiBaseUrl(),
+  baseURL: getApiBaseUrl() + "/api",
   timeout: 10000,
 });
 
@@ -34,6 +39,7 @@ api.interceptors.request.use(
       url: config.baseURL + config.url,
       baseURL: config.baseURL,
       path: config.url,
+      env: import.meta.env.MODE,
     });
 
     const token = localStorage.getItem("token");

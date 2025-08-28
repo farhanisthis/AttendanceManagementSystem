@@ -53,8 +53,6 @@ router.post(
       const { date, timetableId, records } = req.body;
 
       // Validate required fields
-
-      // Validate required fields
       if (!date || !timetableId || !records || !Array.isArray(records)) {
         return res.status(400).json({
           error:
@@ -96,22 +94,22 @@ router.post(
       }
 
       // Create or update attendance record
+      const attendanceData = {
+        date,
+        timetableId,
+        subjectId: tt.subjectId,
+        teacherId: tt.teacherId,
+        classOrBatch: tt.classOrBatch,
+        records: validRecords,
+      };
 
       const doc = await Attendance.findOneAndUpdate(
         { date, timetableId },
-        {
-          date,
-          timetableId,
-          subjectId: tt.subjectId,
-          teacherId: tt.teacherId,
-          classOrBatch: tt.classOrBatch,
-          records: validRecords,
-        },
+        attendanceData,
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
 
       // Attendance saved successfully
-
       res.json(doc);
     } catch (error) {
       console.error("Error in attendance/mark:", error);

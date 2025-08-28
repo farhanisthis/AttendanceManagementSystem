@@ -12,96 +12,44 @@ const router = express.Router();
 // Users
 router.post("/users", auth, requireRole("admin"), async (req, res) => {
   try {
-    console.log("Creating user with data:", req.body);
-    const {
-      name,
-      email,
-      password,
-      role,
-      enrollment,
-      phone,
-      sections,
-      batch,
-      section,
-    } = req.body;
+    console.log("User authenticated:", req.user);
+    console.log("Received user data:", req.body);
 
-    // Input validation and sanitization
-    if (!name?.trim() || !email?.trim() || !password || !role) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ error: "Password must be at least 6 characters" });
-    }
-
-    if (!email.includes("@")) {
-      return res.status(400).json({ error: "Invalid email format" });
-    }
-
-    if (!["student", "teacher", "admin"].includes(role)) {
-      return res.status(400).json({ error: "Invalid role" });
-    }
-
-    if (role === "student" && !enrollment?.trim()) {
-      return res
-        .status(400)
-        .json({ error: "Enrollment number required for students" });
-    }
-
+    const { name, email, password, role, enrollment, phone, sections } =
+      req.body;
     const passwordHash = await bcrypt.hash(password, 10);
 
     const userData = {
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
+      name,
+      email,
       passwordHash,
       role,
-      phone: phone?.trim() || "",
+      phone,
     };
 
     // Add role-specific fields
     if (role === "student") {
-      userData.enrollment = enrollment.trim();
-
-      // Always use the provided batch and section if they exist
-      if (batch && section && batch.trim() && section.trim()) {
-        userData.batch = batch.trim();
-        userData.section = section.trim();
-        userData.classOrBatch = `${batch.trim()} - ${section.trim()}`;
-        console.log("✅ Creating student with provided batch/section:", {
-          batch: batch.trim(),
-          section: section.trim(),
-        });
-      } else {
-        // Fallback: extract from enrollment if batch/section not provided
-        userData.classOrBatch = enrollment.trim();
-        userData.batch = enrollment.split("-")[0] || enrollment;
-        userData.section = enrollment.split("-")[1] || enrollment;
-        console.log("⚠️  Using fallback batch/section from enrollment:", {
-          batch: userData.batch,
-          section: userData.section,
-        });
-      }
+      userData.enrollment = enrollment;
+      userData.classOrBatch = enrollment; // Keep both for compatibility
     } else if (role === "teacher") {
-      userData.sections = Array.isArray(sections) ? sections : [];
+      userData.sections = sections || [];
     }
 
+    console.log("Processed user data:", userData);
+
     const user = await User.create(userData);
+    console.log("User created successfully:", {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
     res.json(user);
   } catch (error) {
     console.error("Error creating user:", error);
     // Check for specific MongoDB errors
     if (error.code === 11000) {
-      if (error.keyPattern.email) {
-        return res.status(400).json({ error: "Email already exists" });
-      }
-      if (error.keyPattern.enrollment) {
-        return res
-          .status(400)
-          .json({ error: "Enrollment number already exists" });
-      }
-      return res.status(400).json({ error: "Duplicate entry found" });
+      return res.status(400).json({ error: "Email already exists" });
     }
     if (error.name === "ValidationError") {
       return res
@@ -114,9 +62,12 @@ router.post("/users", auth, requireRole("admin"), async (req, res) => {
 
 router.get("/users", auth, requireRole("admin"), async (req, res) => {
   try {
+    console.log("GET /users - User authenticated:", req.user);
     const { role } = req.query;
     const q = role ? { role } : {};
+    console.log("Query:", q);
     const users = await User.find(q).select("-passwordHash");
+    console.log(`Found ${users.length} users with role: ${role || "all"}`);
     res.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -152,18 +103,7 @@ router.put("/users/:id", auth, requireRole("admin"), async (req, res) => {
     // Add role-specific fields based on existing user's role
     if (existingUser.role === "student") {
       update.enrollment = enrollment;
-
-      // If batch and section are provided, use them (this preserves the correct values)
-      if (batch && section) {
-        update.batch = batch;
-        update.section = section;
-        update.classOrBatch = `${batch} - ${section}`;
-      } else {
-        // Fallback: extract from enrollment only if batch/section not provided
-        update.classOrBatch = enrollment;
-        update.batch = enrollment?.split("-")[0] || enrollment;
-        update.section = enrollment?.split("-")[1] || enrollment;
-      }
+      update.classOrBatch = enrollment; // Keep both for compatibility
     } else if (existingUser.role === "teacher") {
       update.sections = sections || [];
     }
@@ -423,129 +363,13 @@ router.delete(
   }
 );
 
-// Get students for a specific teacher, subject, and year
-router.get(
-  "/teacher-students",
-  auth,
-  requireRole("admin"),
-  async (req, res) => {
-    try {
-      const { teacherId, subjectId, year } = req.query;
-
-      if (!teacherId || !subjectId || !year) {
-        return res.status(400).json({
-          error: "Teacher ID, Subject ID, and Year are required",
-        });
-      }
-
-      // Find students in the specified year
-      const students = await User.find({
-        role: "student",
-        batch: year,
-      }).select("name email enrollment batch section");
-
-      res.json(students);
-    } catch (error) {
-      console.error("Error fetching teacher students:", error);
-      res.status(500).json({ error: "Failed to fetch students" });
-    }
-  }
-);
-
-// Check attendance count (for debugging)
-router.get(
-  "/attendance/count",
-  auth,
-  requireRole("admin"),
-  async (req, res) => {
-    try {
-      const totalCount = await Attendance.countDocuments({});
-      res.json({ count: totalCount });
-    } catch (error) {
-      console.error("Error counting attendance:", error);
-      res.status(500).json({ error: "Failed to count attendance" });
-    }
-  }
-);
-
-// Attendance
-router.get("/attendance", auth, requireRole("admin"), async (req, res) => {
-  try {
-    const { date, classOrBatch, teacherId } = req.query;
-    let query = {};
-
-    if (date) query.date = date;
-    if (classOrBatch) query.classOrBatch = classOrBatch;
-    if (teacherId) query.teacherId = teacherId;
-
-    // First check if there are any attendance records
-    const totalCount = await Attendance.countDocuments(query);
-
-    if (totalCount === 0) {
-      return res.status(404).json({
-        message: "No attendance records found",
-        count: 0,
-      });
-    }
-
-    const attendance = await Attendance.find(query)
-      .populate("subjectId", "name code")
-      .populate("teacherId", "name email")
-      .lean();
-
-    // Validate that populated data exists
-    const validAttendance = attendance.filter((record) => {
-      if (!record.subjectId || !record.teacherId) {
-        console.warn(
-          `Attendance record ${record._id} has missing references:`,
-          {
-            subjectId: record.subjectId,
-            teacherId: record.teacherId,
-          }
-        );
-        return false;
-      }
-      return true;
-    });
-
-    res.json(validAttendance);
-  } catch (error) {
-    console.error("Error fetching attendance:", error);
-
-    // Provide more specific error messages
-    if (error.name === "CastError") {
-      return res.status(400).json({
-        error: "Invalid ID format in query parameters",
-      });
-    }
-
-    res.status(500).json({
-      error: "Failed to fetch attendance",
-      details: error.message,
-    });
-  }
-});
-
 // Subjects
 router.post("/subjects", auth, requireRole("admin"), async (req, res) => {
   res.json(await Subject.create(req.body));
 });
 
 router.get("/subjects", auth, requireRole("admin"), async (req, res) => {
-  try {
-    const { year } = req.query;
-    let query = {};
-
-    if (year) {
-      query.year = year;
-    }
-
-    const subjects = await Subject.find(query);
-    res.json(subjects);
-  } catch (error) {
-    console.error("Error fetching subjects:", error);
-    res.status(500).json({ error: "Failed to fetch subjects" });
-  }
+  res.json(await Subject.find());
 });
 
 router.put("/subjects/:id", auth, requireRole("admin"), async (req, res) => {
@@ -620,6 +444,85 @@ router.delete(
     } catch (error) {
       console.error("Error deleting timetable slot:", error);
       res.status(400).json({ error: error.message });
+    }
+  }
+);
+
+// Attendance
+router.get("/attendance", auth, requireRole("admin"), async (req, res) => {
+  try {
+    const attendance = await Attendance.find()
+      .populate("subjectId", "name code")
+      .populate("teacherId", "name email")
+      .sort({ date: -1, createdAt: -1 })
+      .lean();
+
+    res.json(attendance);
+  } catch (error) {
+    console.error("Error fetching attendance:", error);
+    res.status(500).json({ error: "Failed to fetch attendance records" });
+  }
+});
+
+// Teacher Students
+router.get(
+  "/teacher-students",
+  auth,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const { teacherId, subjectId, year } = req.query;
+
+      if (!teacherId || !subjectId || !year) {
+        return res.status(400).json({
+          error: "Missing required parameters: teacherId, subjectId, year",
+        });
+      }
+
+      // First, get the teacher's specific assignment for this subject and year
+      const teacher = await User.findById(teacherId).lean();
+      if (!teacher) {
+        return res.status(404).json({ error: "Teacher not found" });
+      }
+
+      // Find the specific class/batch this teacher is assigned to for this subject
+      let teacherClass = null;
+      if (teacher.teacherAssignments) {
+        const assignment = teacher.teacherAssignments.find(
+          (assignment) =>
+            assignment.subjectId?.toString() === subjectId &&
+            assignment.year === year
+        );
+        if (assignment) {
+          teacherClass = assignment.classOrBatch;
+        }
+      }
+
+      // If no specific assignment found, return empty array
+      if (!teacherClass) {
+        return res.json([]);
+      }
+
+      // Now find students in the EXACT class/batch only
+      const students = await User.find({
+        role: "student",
+        classOrBatch: teacherClass, // Only exact match, no regex
+      })
+        .select("-passwordHash")
+        .lean();
+
+      // Additional strict filtering to ensure exact matches
+      const filteredStudents = students.filter((student) => {
+        const studentClass = student.classOrBatch || student.enrollment || "";
+
+        // Only return students with exact class match
+        return studentClass === teacherClass;
+      });
+
+      res.json(filteredStudents);
+    } catch (error) {
+      console.error("Error fetching teacher students:", error);
+      res.status(500).json({ error: "Failed to fetch teacher students" });
     }
   }
 );
