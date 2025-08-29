@@ -8,6 +8,110 @@ import nodemailer from "nodemailer";
 
 const router = express.Router();
 
+// User Registration endpoint
+router.post("/register", async (req, res) => {
+  try {
+    const { name, email, password, role, enrollment, phone, sections, batch, section } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ error: "Name, email, password, and role are required" });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    }
+
+    // Validate role
+    if (!["admin", "teacher", "student"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role. Must be admin, teacher, or student" });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({
+      email: { $regex: new RegExp(`^${email}$`, "i") }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: "User with this email already exists" });
+    }
+
+    // Hash password
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Prepare user data
+    const userData = {
+      name,
+      email,
+      passwordHash,
+      role,
+      phone
+    };
+
+    // Add role-specific fields
+    if (role === "student") {
+      if (enrollment) {
+        userData.enrollment = enrollment;
+        userData.classOrBatch = enrollment;
+      }
+      if (batch) userData.batch = batch;
+      if (section) userData.section = section;
+    } else if (role === "teacher") {
+      if (sections && Array.isArray(sections)) {
+        userData.sections = sections;
+      }
+    }
+
+    // Create user
+    const user = await User.create(userData);
+
+    // Return user data without password
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      enrollment: user.enrollment,
+      classOrBatch: user.classOrBatch,
+      batch: user.batch,
+      section: user.section,
+      sections: user.sections
+    };
+
+    console.log(`✅ User registered successfully: ${user.email} (ID: ${user._id})`);
+    res.status(201).json({
+      message: "User account is successfully created in DB",
+      user: userResponse
+    });
+
+  } catch (error) {
+    console.error("Error in user registration:", error);
+    
+    // Handle MongoDB duplicate key errors
+    if (error.code === 11000) {
+      if (error.keyPattern.email) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+      if (error.keyPattern.enrollment) {
+        return res.status(400).json({ error: "Enrollment number already exists" });
+      }
+    }
+
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        error: "Validation failed", 
+        details: validationErrors 
+      });
+    }
+
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Email configuration
 let transporter = null;
 
@@ -120,6 +224,9 @@ router.post("/login", async (req, res) => {
       email: u.email,
       role: u.role,
       classOrBatch: u.classOrBatch,
+      enrollment: u.enrollment,
+      batch: u.batch,
+      section: u.section,
     },
   });
 });
@@ -138,6 +245,9 @@ router.get("/me", auth, async (req, res) => {
         email: user.email,
         role: user.role,
         classOrBatch: user.classOrBatch,
+        enrollment: user.enrollment,
+        batch: user.batch,
+        section: user.section,
       },
     });
   } catch (error) {

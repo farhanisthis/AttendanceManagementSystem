@@ -98,7 +98,9 @@ export default function StudentDashboard() {
                   Class/Batch
                 </label>
                 <div className="text-lg font-semibold">
-                  {user.classOrBatch || "Not assigned"}
+                  {user.batch && user.section
+                    ? `${user.batch} ${user.section}`
+                    : user.classOrBatch || "Not assigned"}
                 </div>
               </div>
             </div>

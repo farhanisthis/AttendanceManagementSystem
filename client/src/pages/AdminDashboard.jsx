@@ -2636,56 +2636,43 @@ export default function AdminDashboard() {
 
                         <td>
                           {editingUser?._id === s._id ? (
-                            <select
-                              className="select select-bordered select-sm"
-                              value={editForm.enrollment}
-                              onChange={(e) =>
-                                setEditForm((f) => ({
-                                  ...f,
-                                  enrollment: e.target.value,
-                                }))
-                              }
-                            >
-                              <option value="">Select Class/Batch</option>
-                              <option value="1st year - E1">
-                                1st Year - E1
-                              </option>
-                              <option value="1st year - E2">
-                                1st Year - E2
-                              </option>
-                              <option value="1st year - M1">
-                                1st Year - M1
-                              </option>
-                              <option value="1st year - M2">
-                                1st Year - M2
-                              </option>
-                              <option value="2nd year - E1">
-                                2nd Year - E1
-                              </option>
-                              <option value="2nd year - E2">
-                                2nd Year - E2
-                              </option>
-                              <option value="2nd year - M1">
-                                2nd Year - M1
-                              </option>
-                              <option value="2nd year - M2">
-                                2nd Year - M2
-                              </option>
-                              <option value="3rd year - E1">
-                                3rd Year - E1
-                              </option>
-                              <option value="3rd year - E2">
-                                3rd Year - E2
-                              </option>
-                              <option value="3rd year - M1">
-                                3rd Year - M1
-                              </option>
-                              <option value="3rd year - M2">
-                                3rd Year - M2
-                              </option>
-                            </select>
+                            <div className="flex gap-2">
+                              <select
+                                className="select select-bordered select-sm"
+                                value={editForm.batch}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    batch: e.target.value,
+                                  }))
+                                }
+                              >
+                                <option value="">Year</option>
+                                <option value="1st year">1st Year</option>
+                                <option value="2nd year">2nd Year</option>
+                                <option value="3rd year">3rd Year</option>
+                              </select>
+                              <select
+                                className="select select-bordered select-sm"
+                                value={editForm.section}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    section: e.target.value,
+                                  }))
+                                }
+                              >
+                                <option value="">Section</option>
+                                <option value="E1">E1</option>
+                                <option value="E2">E2</option>
+                                <option value="M1">M1</option>
+                                <option value="M2">M2</option>
+                              </select>
+                            </div>
+                          ) : s.batch && s.section ? (
+                            `${s.batch} ${s.section}`
                           ) : (
-                            s.enrollment || "Not assigned"
+                            s.classOrBatch || "Not assigned"
                           )}
                         </td>
 

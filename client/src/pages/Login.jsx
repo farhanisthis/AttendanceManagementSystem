@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import api from "../api";
 import { useAuth } from "../AuthContext";
@@ -280,6 +280,19 @@ export default function Login() {
                 )}
               </button>
             </form>
+
+            {/* Registration Link */}
+            <div className="text-center mt-6 pt-6 border-t border-slate-200">
+              <p className="text-slate-600">
+                Don't have an account?{" "}
+                <Link
+                  to="/register"
+                  className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
+                >
+                  Sign up here
+                </Link>
+              </p>
+            </div>
 
             {/* Password Reset Form */}
             {showResetForm && (

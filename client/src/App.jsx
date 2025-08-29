@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
@@ -39,6 +40,20 @@ function Home() {
               <span className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full font-medium text-sm">
                 Student Portal
               </span>
+            </div>
+            <div className="flex gap-4 justify-center mt-8">
+              <Link
+                to="/login"
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-xl"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                className="px-8 py-3 bg-white text-blue-600 font-medium rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
+              >
+                Create Account
+              </Link>
             </div>
           </div>
         </div>
@@ -135,6 +150,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route
               path="/admin"
               element={
