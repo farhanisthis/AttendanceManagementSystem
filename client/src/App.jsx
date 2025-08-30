@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "./AuthContext";
+import { AuthProvider, useAuth } from "./AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 import Layout from "./components/Layout";
@@ -11,6 +11,8 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 
 function Home() {
+  const { user, isLoading } = useAuth();
+
   return (
     <div className="space-y-16">
       {/* Hero Section */}
@@ -41,20 +43,54 @@ function Home() {
                 Student Portal
               </span>
             </div>
-            <div className="flex gap-4 justify-center mt-8">
-              <Link
-                to="/login"
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-xl"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/register"
-                className="px-8 py-3 bg-white text-blue-600 font-medium rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
-              >
-                Create Account
-              </Link>
-            </div>
+
+            {/* Show sign-in buttons only when logged out */}
+            {!isLoading && !user && (
+              <div className="flex gap-4 justify-center mt-8">
+                <Link
+                  to="/login?role=teacher"
+                  className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-emerald-800 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Sign In as Teacher
+                </Link>
+                <Link
+                  to="/login?role=student"
+                  className="px-8 py-3 bg-gradient-to-r from-purple-600 to-violet-700 text-white font-medium rounded-lg hover:from-purple-700 hover:to-violet-800 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Sign In as Student
+                </Link>
+              </div>
+            )}
+
+            {/* Show user info when logged in */}
+            {!isLoading && user && (
+              <div className="mt-8">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full font-medium shadow-lg">
+                  <span>👋 Welcome back, {user.name}!</span>
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                    {user.role === "admin"
+                      ? "Admin"
+                      : user.role === "teacher"
+                      ? "Teacher"
+                      : "Student"}
+                  </span>
+                </div>
+                <div className="mt-4">
+                  <Link
+                    to={
+                      user.role === "admin"
+                        ? "/admin"
+                        : user.role === "teacher"
+                        ? "/teacher"
+                        : "/student"
+                    }
+                    className="px-6 py-2 bg-white text-blue-600 font-medium rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
+                  >
+                    Go to Dashboard
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -185,12 +221,18 @@ export default function App() {
           </Route>
         </Routes>
         <Toaster
-          position="top-right"
+          position="bottom-right"
           toastOptions={{
             duration: 4000,
             style: {
               background: "#363636",
               color: "#fff",
+              fontSize: "16px",
+              padding: "16px 20px",
+              borderRadius: "12px",
+              minWidth: "320px",
+              maxWidth: "400px",
+              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
             },
             success: {
               duration: 3000,
@@ -198,12 +240,32 @@ export default function App() {
                 primary: "#10b981",
                 secondary: "#fff",
               },
+              style: {
+                background: "#10b981",
+                color: "#fff",
+                fontSize: "16px",
+                padding: "16px 20px",
+                borderRadius: "12px",
+                minWidth: "320px",
+                maxWidth: "400px",
+                boxShadow: "0 10px 25px rgba(16, 185, 129, 0.3)",
+              },
             },
             error: {
               duration: 5000,
               iconTheme: {
                 primary: "#ef4444",
                 secondary: "#fff",
+              },
+              style: {
+                background: "#ef4444",
+                color: "#fff",
+                fontSize: "16px",
+                padding: "16px 20px",
+                borderRadius: "12px",
+                minWidth: "320px",
+                maxWidth: "400px",
+                boxShadow: "0 10px 25px rgba(239, 68, 68, 0.3)",
               },
             },
           }}

@@ -409,12 +409,13 @@ router.post("/timetable", auth, requireRole("admin"), async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Check for scheduling conflicts
+    // Check for scheduling conflicts (class/batch conflicts)
+    // Find any existing slots for the same class/batch on the same day that overlap with the new time
     const conflictingSlots = await Timetable.find({
       classOrBatch,
       dayOfWeek,
       $or: [
-        // Check if new slot overlaps with existing slots
+        // Existing slot starts before new slot ends AND existing slot ends after new slot starts
         {
           startTime: { $lt: endTime },
           endTime: { $gt: startTime },
@@ -425,7 +426,8 @@ router.post("/timetable", auth, requireRole("admin"), async (req, res) => {
     if (conflictingSlots.length > 0) {
       return res.status(400).json({
         error: "System prevents scheduling conflict",
-        details: "This time slot conflicts with existing classes",
+        details:
+          "This time slot conflicts with existing classes for the same section",
         conflicts: conflictingSlots.map((slot) => ({
           subject: slot.subjectId,
           teacher: slot.teacherId,
@@ -435,11 +437,13 @@ router.post("/timetable", auth, requireRole("admin"), async (req, res) => {
       });
     }
 
-    // Check if teacher has conflicting classes
+    // Check if teacher has conflicting classes (teacher conflicts)
+    // Find any existing slots for the same teacher on the same day that overlap with the new time
     const teacherConflicts = await Timetable.find({
       teacherId,
       dayOfWeek,
       $or: [
+        // Existing slot starts before new slot ends AND existing slot ends after new slot starts
         {
           startTime: { $lt: endTime },
           endTime: { $gt: startTime },
@@ -478,6 +482,68 @@ router.post("/timetable/bulk", auth, requireRole("admin"), async (req, res) => {
     const slots = req.body;
     if (!Array.isArray(slots) || slots.length === 0) {
       return res.status(400).json({ error: "Invalid slots data" });
+    }
+
+    // Validate each slot for conflicts before creating
+    for (const slot of slots) {
+      const {
+        subjectId,
+        teacherId,
+        classOrBatch,
+        dayOfWeek,
+        startTime,
+        endTime,
+      } = slot;
+
+      // Check for class/batch conflicts
+      const conflictingSlots = await Timetable.find({
+        classOrBatch,
+        dayOfWeek,
+        $or: [
+          {
+            startTime: { $lt: endTime },
+            endTime: { $gt: startTime },
+          },
+        ],
+      });
+
+      if (conflictingSlots.length > 0) {
+        return res.status(400).json({
+          error: "System prevents scheduling conflict",
+          details: `Time slot for ${classOrBatch} on day ${dayOfWeek} conflicts with existing classes`,
+          conflicts: conflictingSlots.map((conflictSlot) => ({
+            subject: conflictSlot.subjectId,
+            teacher: conflictSlot.teacherId,
+            startTime: conflictSlot.startTime,
+            endTime: conflictSlot.endTime,
+          })),
+        });
+      }
+
+      // Check for teacher conflicts
+      const teacherConflicts = await Timetable.find({
+        teacherId,
+        dayOfWeek,
+        $or: [
+          {
+            startTime: { $lt: endTime },
+            endTime: { $gt: startTime },
+          },
+        ],
+      });
+
+      if (teacherConflicts.length > 0) {
+        return res.status(400).json({
+          error: "System prevents scheduling conflict",
+          details: `Teacher has conflicting classes on day ${dayOfWeek} at this time`,
+          conflicts: teacherConflicts.map((conflictSlot) => ({
+            subject: conflictSlot.subjectId,
+            class: conflictSlot.classOrBatch,
+            startTime: conflictSlot.startTime,
+            endTime: conflictSlot.endTime,
+          })),
+        });
+      }
     }
 
     const createdSlots = await Timetable.insertMany(slots);

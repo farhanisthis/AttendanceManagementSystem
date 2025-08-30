@@ -34,6 +34,7 @@ export default function TeacherDashboard() {
   const [teacherAssignments, setTeacherAssignments] = useState([]);
   const [mentorship, setMentorship] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [showAllStudents, setShowAllStudents] = useState(false);
 
   const days = [
     { id: 1, name: "Monday", short: "Mon" },
@@ -455,7 +456,13 @@ export default function TeacherDashboard() {
                 </div>
               )}
 
-              <div className="overflow-x-auto">
+              <div
+                className={`overflow-x-auto ${
+                  students && students.length > 10 && !showAllStudents
+                    ? "max-h-96 overflow-y-auto"
+                    : ""
+                }`}
+              >
                 <table className="table">
                   <thead>
                     <tr>
@@ -500,6 +507,20 @@ export default function TeacherDashboard() {
                     )}
                   </tbody>
                 </table>
+
+                {/* Expand/Collapse Button */}
+                {students && students.length > 10 && (
+                  <div className="flex justify-center mt-4">
+                    <button
+                      onClick={() => setShowAllStudents(!showAllStudents)}
+                      className="btn btn-outline btn-sm"
+                    >
+                      {showAllStudents
+                        ? "Collapse View"
+                        : `Expand View (${students.length} students)`}
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-2 pt-2">

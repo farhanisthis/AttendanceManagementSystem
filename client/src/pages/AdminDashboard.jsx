@@ -73,6 +73,16 @@ export default function AdminDashboard() {
   const [selectedSection, setSelectedSection] = useState("");
   const [bulkSlots, setBulkSlots] = useState([]);
 
+  // Simple slot creation state
+  const [newSlot, setNewSlot] = useState({
+    subject: "",
+    day: "",
+    startTime: "",
+    endTime: "",
+    slotType: "theory",
+    room: "",
+  });
+
   // Teacher assignment states
   const [assigningTeacher, setAssigningTeacher] = useState(null);
   const [newAssignment, setNewAssignment] = useState({
@@ -665,6 +675,9 @@ export default function AdminDashboard() {
       if (errorMsg.includes("Invalid role")) {
         return "Invalid user role selected.";
       }
+      if (errorMsg.includes("scheduling conflict")) {
+        return "Scheduling conflict detected. Please check the time slot.";
+      }
 
       return errorMsg;
     }
@@ -961,10 +974,41 @@ export default function AdminDashboard() {
         );
         return;
       } catch (bulkError) {
-        // Fallback to individual creation
+        console.error("Bulk creation failed:", bulkError);
+
+        // Check if it's a conflict error
+        if (bulkError.response?.data?.error?.includes("scheduling conflict")) {
+          const errorDetails = bulkError.response.data;
+
+          // Show one comprehensive error message instead of multiple
+          let conflictMessage = `${errorDetails.error}: ${errorDetails.details}`;
+
+          // Add specific conflict details if available
+          if (errorDetails.conflicts && errorDetails.conflicts.length > 0) {
+            const conflictInfo = errorDetails.conflicts
+              .map(
+                (conflict) =>
+                  `${conflict.subject || "Unknown subject"} - ${
+                    conflict.class || "Unknown class"
+                  } (${conflict.startTime}-${conflict.endTime})`
+              )
+              .join(", ");
+            conflictMessage += `\nConflicts: ${conflictInfo}`;
+          }
+
+          toast.error(conflictMessage);
+          setBulkSlots([]);
+          return;
+        }
+
+        // For other errors, fallback to individual creation
+        console.log("Falling back to individual creation...");
 
         // Fallback: add slots one by one
         let successCount = 0;
+        let conflictCount = 0;
+        let otherErrorCount = 0;
+
         for (const slot of slotsData) {
           try {
             await api.post("/admin/timetable", slot);
@@ -973,15 +1017,37 @@ export default function AdminDashboard() {
             console.error("Error adding individual slot:", err);
             console.error("Slot that failed:", slot);
             console.error("Error response:", err.response?.data);
+
+            if (err.response?.data?.error?.includes("scheduling conflict")) {
+              conflictCount++;
+              // Don't show individual conflict errors to avoid spam
+            } else {
+              otherErrorCount++;
+            }
           }
         }
 
-        // Individual creation completed
+        // Show one comprehensive message based on results
+        if (successCount > 0) {
+          if (conflictCount > 0) {
+            toast.success(
+              `Created ${successCount}/${validSlots.length} slots. ${conflictCount} had conflicts.`
+            );
+          } else {
+            toast.success(
+              `Successfully created ${successCount}/${validSlots.length} timetable slots!`
+            );
+          }
+        } else if (conflictCount > 0) {
+          toast.error(
+            `All ${validSlots.length} slots had scheduling conflicts.`
+          );
+        } else {
+          toast.error(`Failed to create any slots. Check console for details.`);
+        }
+
         setBulkSlots([]);
         load();
-        toast.success(
-          `Successfully created ${successCount}/${slotsData.length} timetable slots!`
-        );
       }
     } catch (error) {
       console.error("=== ERROR IN TIMETABLE CREATION ===");
@@ -993,13 +1059,39 @@ export default function AdminDashboard() {
   };
 
   const addSlot = async () => {
-    if (!newSlot.subject || !newSlot.day || !newSlot.startTime) {
+    if (
+      !newSlot.subject ||
+      !newSlot.day ||
+      !newSlot.startTime ||
+      !newSlot.endTime
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     try {
-      await api.post("/admin/timetable", newSlot);
+      // Transform the data to match API expectations
+      const slotData = {
+        subjectId: newSlot.subject,
+        dayOfWeek: Number(newSlot.day),
+        startTime: newSlot.startTime,
+        endTime: newSlot.endTime,
+        slotType: newSlot.slotType,
+        room: newSlot.room,
+        teacherId: selectedTeacher,
+        classOrBatch:
+          selectedBatch && selectedSection
+            ? `${selectedBatch} - ${selectedSection}`
+            : "",
+      };
+
+      // Validate that teacher, batch, and section are selected
+      if (!slotData.teacherId || !slotData.classOrBatch) {
+        toast.error("Please select teacher, batch, and section first");
+        return;
+      }
+
+      await api.post("/admin/timetable", slotData);
       setNewSlot({
         subject: "",
         day: "",
@@ -1007,7 +1099,6 @@ export default function AdminDashboard() {
         endTime: "",
         slotType: "theory",
         room: "",
-        notes: "",
       });
       load();
       toast.success("Timetable slot added successfully!");
@@ -1055,7 +1146,6 @@ export default function AdminDashboard() {
         endTime: "11:30",
         slotType: "theory",
         room: "",
-        notes: "",
         batch: selectedBatch,
         section: selectedSection,
       },
@@ -1713,11 +1803,13 @@ export default function AdminDashboard() {
                           }
                         >
                           <option value="">Subject</option>
-                          {subjects.map((s) => (
-                            <option key={s._id} value={s._id}>
-                              {s.name}
-                            </option>
-                          ))}
+                          {subjects
+                            .filter((s) => s.year === selectedBatch)
+                            .map((s) => (
+                              <option key={s._id} value={s._id}>
+                                {s.name}
+                              </option>
+                            ))}
                         </select>
 
                         <select
@@ -1800,14 +1892,6 @@ export default function AdminDashboard() {
                             updateBulkSlot(index, "room", e.target.value)
                           }
                         />
-                        <input
-                          className="input input-bordered input-sm"
-                          placeholder="Notes (Optional)"
-                          value={slot.notes}
-                          onChange={(e) =>
-                            updateBulkSlot(index, "notes", e.target.value)
-                          }
-                        />
                       </div>
                     </div>
                   ))}
@@ -1822,6 +1906,161 @@ export default function AdminDashboard() {
                   )}
                 </div>
               )}
+            </div>
+          </Section>
+
+          <Section title="Single Slot Creation" icon="➕">
+            <div className="space-y-4">
+              {(!selectedTeacher || !selectedBatch || !selectedSection) && (
+                <div className="alert alert-info">
+                  <div>
+                    <span className="font-medium">Info:</span> Please select
+                    Teacher, Batch, and Section above before creating slots.
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-3 gap-4">
+                <select
+                  className="select select-bordered w-full"
+                  value={newSlot.subject}
+                  onChange={(e) =>
+                    setNewSlot((prev) => ({ ...prev, subject: e.target.value }))
+                  }
+                  disabled={
+                    !selectedTeacher || !selectedBatch || !selectedSection
+                  }
+                >
+                  <option value="">Select Subject</option>
+                  {subjects
+                    .filter((s) => s.year === selectedBatch)
+                    .map((s) => (
+                      <option key={s._id} value={s._id}>
+                        {s.name}
+                      </option>
+                    ))}
+                </select>
+
+                <select
+                  className="select select-bordered w-full"
+                  value={newSlot.day}
+                  onChange={(e) =>
+                    setNewSlot((prev) => ({ ...prev, day: e.target.value }))
+                  }
+                  disabled={
+                    !selectedTeacher || !selectedBatch || !selectedSection
+                  }
+                >
+                  <option value="">Select Day</option>
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                  <option value="0">Sunday</option>
+                </select>
+
+                <select
+                  className="select select-bordered w-full"
+                  value={
+                    timeSlots.find(
+                      (ts) =>
+                        ts.startTime === newSlot.startTime &&
+                        ts.endTime === newSlot.endTime
+                    )?.label || ""
+                  }
+                  onChange={(e) => {
+                    const selectedSlot = timeSlots.find(
+                      (ts) => ts.label === e.target.value
+                    );
+                    if (selectedSlot) {
+                      setNewSlot((prev) => ({
+                        ...prev,
+                        startTime: selectedSlot.startTime,
+                        endTime: selectedSlot.endTime,
+                      }));
+                    }
+                  }}
+                  disabled={
+                    !selectedTeacher || !selectedBatch || !selectedSection
+                  }
+                >
+                  <option value="">Select Time Slot</option>
+                  {timeSlots.map((timeSlot) => (
+                    <option key={timeSlot.label} value={timeSlot.label}>
+                      {timeSlot.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <select
+                  className="select select-bordered w-full"
+                  value={newSlot.slotType}
+                  onChange={(e) =>
+                    setNewSlot((prev) => ({
+                      ...prev,
+                      slotType: e.target.value,
+                    }))
+                  }
+                  disabled={
+                    !selectedTeacher || !selectedBatch || !selectedSection
+                  }
+                >
+                  <option value="theory">Theory</option>
+                  <option value="lab">Lab</option>
+                  <option value="tutorial">Tutorial</option>
+                </select>
+
+                <select
+                  className="select select-bordered w-full"
+                  value={newSlot.room}
+                  onChange={(e) =>
+                    setNewSlot((prev) => ({ ...prev, room: e.target.value }))
+                  }
+                  disabled={
+                    !selectedTeacher || !selectedBatch || !selectedSection
+                  }
+                >
+                  <option value="">Select Room (Optional)</option>
+                  <option value="111">111</option>
+                  <option value="112">112</option>
+                  <option value="114">114</option>
+                  <option value="115">115</option>
+                  <option value="211">211</option>
+                  <option value="212">212</option>
+                  <option value="214">214</option>
+                  <option value="215">215</option>
+                  <option value="311">311</option>
+                  <option value="312">312</option>
+                  <option value="314">314</option>
+                  <option value="315">315</option>
+                  <option value="411">411</option>
+                  <option value="412">412</option>
+                  <option value="414">414</option>
+                  <option value="415">415</option>
+                  <option value="511">511</option>
+                  <option value="512">512</option>
+                  <option value="514">514</option>
+                  <option value="515">515</option>
+                </select>
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  className="btn btn-primary"
+                  onClick={addSlot}
+                  disabled={
+                    !newSlot.subject ||
+                    !newSlot.day ||
+                    !newSlot.startTime ||
+                    !newSlot.endTime
+                  }
+                >
+                  Add Single Slot
+                </button>
+              </div>
             </div>
           </Section>
 
@@ -3018,79 +3257,6 @@ export default function AdminDashboard() {
                     <tr>
                       <td colSpan="8" className="text-center opacity-70">
                         No timetable slots created yet
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Section>
-
-          <Section title="Attendance Records" icon="📊">
-            <div className="overflow-x-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Subject</th>
-                    <th>Teacher</th>
-                    <th>Class</th>
-                    <th>Students Present</th>
-                    <th>Students Absent</th>
-                    <th>Total Students</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendance.length > 0 ? (
-                    attendance.map((att) => {
-                      const presentCount = att.records.filter(
-                        (r) => r.status === "present"
-                      ).length;
-                      const absentCount = att.records.filter(
-                        (r) => r.status === "absent"
-                      ).length;
-                      const totalCount = att.records.length;
-
-                      return (
-                        <tr key={att._id}>
-                          <td className="font-medium">
-                            {new Date(att.date).toLocaleDateString()}
-                          </td>
-                          <td>{att.subjectId?.name || "N/A"}</td>
-                          <td>{att.teacherId?.name || "N/A"}</td>
-                          <td>{att.classOrBatch}</td>
-                          <td>
-                            <span className="badge badge-success">
-                              {presentCount}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="badge badge-error">
-                              {absentCount}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="badge badge-outline">
-                              {totalCount}
-                            </span>
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-xs btn-info"
-                              onClick={() => showAttendanceReport(att)}
-                              title="View detailed attendance report"
-                            >
-                              📊 Report
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan="7" className="text-center opacity-70">
-                        No attendance records found
                       </td>
                     </tr>
                   )}
