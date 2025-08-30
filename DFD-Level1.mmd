@@ -1,0 +1,26 @@
+flowchart TD
+    subgraph System
+        UM[User Management]
+        AM[Attendance Management]
+        TM[Timetable Management]
+        SM[Subject Management]
+    end
+
+    Student -- "Login/Attendance Data" --> UM
+    Teacher -- "Attendance/Timetable Data" --> AM
+    Admin -- "Manage Users" --> UM
+    Admin -- "Manage Subjects" --> SM
+    Admin -- "Manage Timetable" --> TM
+
+    UM -- "User Info" --> AM
+    SM -- "Subject Info" --> TM
+    TM -- "Timetable Info" --> AM
+
+    AM -- "Attendance Report" --> Student
+    AM -- "Attendance Data" --> Teacher
+    TM -- "Timetable Info" --> Teacher
+    SM -- "Subject List" --> Teacher
+    UM -- "User List" --> Admin
+    AM -- "Attendance Reports" --> Admin
+    TM -- "Timetable Reports" --> Admin
+    SM -- "Subject Reports" --> Admin
