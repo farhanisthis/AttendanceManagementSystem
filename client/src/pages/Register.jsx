@@ -83,7 +83,7 @@ const Register = () => {
             <h1 className="text-3xl font-bold text-slate-800 mb-2">
               Create Account
             </h1>
-            <p className="text-slate-600">Join the Smart College system</p>
+            <p className="text-slate-600">Join the AttendEase system</p>
           </div>
 
           {/* Registration Form */}

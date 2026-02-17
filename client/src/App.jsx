@@ -24,9 +24,9 @@ function Home() {
               <span className="text-5xl">🎓</span>
             </div>
             <h1 className="text-6xl font-bold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-6 leading-tight">
-              Smart College
+              AttendEase
               <br />
-              <span className="text-5xl">Timetable & Attendance</span>
+              <span className="text-5xl">Attendance Management System</span>
             </h1>
             <p className="text-xl text-slate-600 leading-relaxed mb-8 max-w-2xl mx-auto">
               Streamlined attendance management with role-based access. Clean
@@ -151,7 +151,7 @@ function Home() {
       {/* Stats Section */}
       <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
         <h2 className="text-3xl font-bold text-slate-800 text-center mb-8">
-          Why Choose Smart College?
+          Why Choose AttendEase?
         </h2>
         <div className="grid gap-8 md:grid-cols-4 text-center">
           <div>

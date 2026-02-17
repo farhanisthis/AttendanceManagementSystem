@@ -1,7 +1,7 @@
 {
-  "name": "attendance-management-system",
+  "name": "attendease",
   "version": "1.0.0",
-  "description": "Smart College Attendance Management System",
+  "description": "AttendEase - Attendance Management System",
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",

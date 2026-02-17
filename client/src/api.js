@@ -3,7 +3,7 @@ import axios from "axios";
 // Determine the API base URL based on environment
 const getApiBaseUrl = () => {
   // Production backend URL - this should match your render.yaml
-  const productionUrl = "https://attendancemanagementsystem-7t71.onrender.com";
+  const productionUrl = "localhost:5173";
 
   // Check if we're running on localhost (more reliable than import.meta.env.DEV)
   const isLocalhost =
