@@ -2,22 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import api from "../api";
 import { useAuth } from "../AuthContext";
+import Section from "../components/Section";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
-
-function Section({ title, children, icon }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
-        <div className="flex items-center gap-3">
-          {icon && <div className="text-2xl">{icon}</div>}
-          <h2 className="text-xl font-bold text-slate-800">{title}</h2>
-        </div>
-      </div>
-      <div className="p-6">{children}</div>
-    </div>
-  );
-}
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -289,14 +276,14 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg">
+      <div className="text-center mb-12 animate-slide-up">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg animate-scale-in">
           <span className="text-3xl">👨‍🏫</span>
         </div>
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-4">
+        <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-4 tracking-tight">
           Teacher Dashboard
         </h1>
-        <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
           Manage your classes and mark student attendance efficiently
         </p>
       </div>
@@ -385,14 +372,14 @@ export default function TeacherDashboard() {
                 <button
                   key={day.id}
                   onClick={() => setSelectedDay(day.id)}
-                  className={`p-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md text-center ${
+                  className={`p-3 rounded-xl border-2 transition-all duration-200 hover:shadow-md text-center ${
                     selectedDay === day.id
-                      ? "border-blue-500 bg-blue-50 text-blue-800 shadow-md"
+                      ? "border-blue-500 bg-blue-50 text-blue-800 shadow-md ring-2 ring-blue-200"
                       : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                   }`}
                 >
-                  <div className="font-bold text-lg">{day.short}</div>
-                  <div className="text-sm opacity-75">{day.name}</div>
+                  <div className="font-bold text-base">{day.short}</div>
+                  <div className="text-xs opacity-70 mt-0.5">{day.name}</div>
                 </button>
               ))}
             </div>
@@ -523,6 +510,26 @@ export default function TeacherDashboard() {
                 )}
               </div>
 
+              {/* Quick Stats Bar */}
+              {students && students.length > 0 && (
+                <div className="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                  <div className="flex-1 text-center">
+                    <div className="text-lg font-bold text-slate-700">{students.length}</div>
+                    <div className="text-xs text-slate-500 font-medium">Total</div>
+                  </div>
+                  <div className="w-px bg-slate-200" />
+                  <div className="flex-1 text-center">
+                    <div className="text-lg font-bold text-emerald-600">{Object.values(mark).filter(v => v === "present").length}</div>
+                    <div className="text-xs text-emerald-600 font-medium">Present</div>
+                  </div>
+                  <div className="w-px bg-slate-200" />
+                  <div className="flex-1 text-center">
+                    <div className="text-lg font-bold text-red-600">{Object.values(mark).filter(v => v === "absent").length}</div>
+                    <div className="text-xs text-red-600 font-medium">Absent</div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-2 pt-2">
                 <button
                   className="btn btn-primary flex-1"
@@ -531,7 +538,7 @@ export default function TeacherDashboard() {
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="loading loading-spinner loading-sm"></span>
+                      <span className="loading-spinner loading-sm"></span>
                       Saving...
                     </>
                   ) : isEditing ? (

@@ -16,30 +16,30 @@ function Home() {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden animate-slide-up">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-indigo-600/10 to-purple-600/10 rounded-3xl"></div>
-        <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-12 border border-slate-200/50 shadow-2xl">
+        <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-slate-200/50 shadow-2xl">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-8 shadow-xl">
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-8 shadow-xl animate-scale-in">
               <span className="text-5xl">🎓</span>
             </div>
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-6xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-6 leading-tight tracking-tight">
               AttendEase
               <br />
-              <span className="text-5xl">Attendance Management System</span>
+              <span className="text-3xl sm:text-5xl font-bold">Attendance Management System</span>
             </h1>
-            <p className="text-xl text-slate-600 leading-relaxed mb-8 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-slate-600 leading-relaxed mb-8 max-w-2xl mx-auto">
               Streamlined attendance management with role-based access. Clean
               UI, minimal clicks, maximum efficiency for modern education.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
-              <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-medium text-sm">
+              <span className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full font-medium text-sm border border-blue-200/60">
                 Admin Management
               </span>
-              <span className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full font-medium text-sm">
+              <span className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full font-medium text-sm border border-indigo-200/60">
                 Teacher Tools
               </span>
-              <span className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full font-medium text-sm">
+              <span className="px-4 py-2 bg-purple-50 text-purple-700 rounded-full font-medium text-sm border border-purple-200/60">
                 Student Portal
               </span>
             </div>
@@ -97,7 +97,7 @@ function Home() {
 
       {/* Features Grid */}
       <div className="grid gap-8 md:grid-cols-3">
-        <div className="group">
+        <div className="group animate-slide-up delay-1">
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <span className="text-3xl">👨‍🏫</span>
@@ -113,7 +113,7 @@ function Home() {
           </div>
         </div>
 
-        <div className="group">
+        <div className="group animate-slide-up delay-2">
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
             <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <span className="text-3xl">👨‍🎓</span>
@@ -129,7 +129,7 @@ function Home() {
           </div>
         </div>
 
-        <div className="group">
+        <div className="group animate-slide-up delay-3">
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
             <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <span className="text-3xl">📊</span>
@@ -149,7 +149,7 @@ function Home() {
       </div>
 
       {/* Stats Section */}
-      <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
+      <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200 animate-slide-up delay-4">
         <h2 className="text-3xl font-bold text-slate-800 text-center mb-8">
           Why Choose AttendEase?
         </h2>

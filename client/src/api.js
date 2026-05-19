@@ -2,9 +2,6 @@ import axios from "axios";
 
 // Determine the API base URL based on environment
 const getApiBaseUrl = () => {
-  // Production backend URL - this should match your render.yaml
-  const productionUrl = "localhost:5173";
-
   // Check if we're running on localhost (more reliable than import.meta.env.DEV)
   const isLocalhost =
     window.location.hostname === "localhost" ||
@@ -19,15 +16,18 @@ const getApiBaseUrl = () => {
     return "http://localhost:4000";
   }
 
-  // Production fallback
+  // Production backend URL - use environment variable if set, otherwise fallback to deployed backend
+  const productionUrl = import.meta.env.VITE_API_URL || "https://attendancemanagementsystem-7t71.onrender.com";
+
   console.log("🚀 Using production URL:", productionUrl);
   console.log("📍 Current hostname:", window.location.hostname);
   console.log("🔧 DEV mode:", import.meta.env.DEV);
   return productionUrl;
 };
 
+const rawBaseUrl = getApiBaseUrl();
 const api = axios.create({
-  baseURL: getApiBaseUrl() + "/api",
+  baseURL: rawBaseUrl.endsWith("/api") ? rawBaseUrl : `${rawBaseUrl.replace(/\/$/, "")}/api`,
   timeout: 10000,
 });
 

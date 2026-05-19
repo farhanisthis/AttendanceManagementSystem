@@ -1,20 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import api from "../api";
-
-function Section({ title, children, icon }) {
-  return (
-    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
-        <div className="flex items-center gap-3">
-          {icon && <div className="text-2xl">{icon}</div>}
-          <h2 className="text-xl font-bold text-slate-800">{title}</h2>
-        </div>
-      </div>
-      <div className="p-6">{children}</div>
-    </div>
-  );
-}
+import Section from "../components/Section";
 
 export default function AdminDashboard() {
   const [teachers, setTeachers] = useState([]);
@@ -1348,14 +1335,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg">
+      <div className="text-center mb-12 animate-slide-up">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg animate-scale-in">
           <span className="text-3xl">⚙️</span>
         </div>
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-4">
+        <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-4 tracking-tight">
           Admin Dashboard
         </h1>
-        <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
           Manage teachers, students, subjects, and timetable with comprehensive
           administrative tools
         </p>
@@ -1424,7 +1411,7 @@ export default function AdminDashboard() {
           {/* Total Users Card */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
                 <span className="text-white text-xl">👥</span>
               </div>
               <div className="text-right">
@@ -1455,7 +1442,7 @@ export default function AdminDashboard() {
           {/* Subjects Card */}
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-md">
                 <span className="text-white text-xl">📚</span>
               </div>
               <div className="text-right">
@@ -1475,7 +1462,7 @@ export default function AdminDashboard() {
           {/* Timetable Slots Card */}
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center shadow-md">
                 <span className="text-white text-xl">📅</span>
               </div>
               <div className="text-right">
@@ -1495,7 +1482,7 @@ export default function AdminDashboard() {
           {/* Attendance Records Card */}
           <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 border border-orange-200 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-md">
                 <span className="text-white text-xl">✅</span>
               </div>
               <div className="text-right">
@@ -1518,37 +1505,32 @@ export default function AdminDashboard() {
 
       {/* Tabbed Management Interface */}
       <div className="mb-8 flex justify-center">
-        <div className="border-b border-gray-200 p-2">
-          <nav
-            className="-mb-px flex flex-wrap justify-center gap-2"
-            aria-label="Tabs"
-          >
-            {[
-              { id: "users", name: "User Management", icon: "👤" },
-              { id: "timetable", name: "Timetable", icon: "📅" },
-              { id: "subjects", name: "Subjects", icon: "📚" },
-              {
-                id: "teacher-students",
-                name: "Teacher-Students",
-                icon: "👨‍🎓",
-              },
-              { id: "attendance", name: "Attendance", icon: "✅" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`whitespace-nowrap py-2 px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 rounded-lg shadow-md cursor-pointer min-w-fit ${
-                  activeTab === tab.id
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <span className="mr-1 sm:mr-2">{tab.icon}</span>
-                <span className="hidden sm:inline">{tab.name}</span>
-                <span className="sm:hidden">{tab.name.split(" ")[0]}</span>
-              </button>
-            ))}
-          </nav>
+        <div className="inline-flex flex-wrap justify-center gap-2 bg-slate-100 p-1.5 rounded-2xl">
+          {[
+            { id: "users", name: "User Management", icon: "👤" },
+            { id: "timetable", name: "Timetable", icon: "📅" },
+            { id: "subjects", name: "Subjects", icon: "📚" },
+            {
+              id: "teacher-students",
+              name: "Teacher-Students",
+              icon: "👨‍🎓",
+            },
+            { id: "attendance", name: "Attendance", icon: "✅" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`whitespace-nowrap py-2.5 px-4 font-medium text-xs sm:text-sm transition-all duration-200 rounded-xl cursor-pointer min-w-fit ${
+                activeTab === tab.id
+                  ? "bg-white text-blue-700 shadow-md"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+              }`}
+            >
+              <span className="mr-1 sm:mr-2">{tab.icon}</span>
+              <span className="hidden sm:inline">{tab.name}</span>
+              <span className="sm:hidden">{tab.name.split(" ")[0]}</span>
+            </button>
+          ))}
         </div>
       </div>
 

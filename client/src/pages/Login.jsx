@@ -213,11 +213,11 @@ export default function Login() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div className="max-w-md w-full animate-slide-up">
+        <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/80 overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-8 py-12 text-center">
-            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm animate-scale-in">
               <span className="text-3xl">🎓</span>
             </div>
             <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
@@ -296,7 +296,7 @@ export default function Login() {
 
             {/* Password Reset Form */}
             {showResetForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
                 <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden">
                   {/* Modal Header */}
                   <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 text-white">
