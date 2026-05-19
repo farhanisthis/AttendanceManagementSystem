@@ -17,7 +17,13 @@ const getApiBaseUrl = () => {
   }
 
   // Production backend URL - use environment variable if set, otherwise fallback to deployed backend
-  const productionUrl = import.meta.env.VITE_API_URL || "https://attendancemanagementsystem-7t71.onrender.com";
+  let productionUrl = import.meta.env.VITE_API_URL || "https://attendancemanagementsystem-7t71.onrender.com";
+
+  // Auto-correct if it points to the old/non-existent backend URL without the "-7t71" suffix
+  if (productionUrl.includes("attendancemanagementsystem.onrender.com") && !productionUrl.includes("-7t71")) {
+    console.log("⚠️ Old backend URL detected, auto-correcting to the correct active backend.");
+    productionUrl = "https://attendancemanagementsystem-7t71.onrender.com";
+  }
 
   console.log("🚀 Using production URL:", productionUrl);
   console.log("📍 Current hostname:", window.location.hostname);
