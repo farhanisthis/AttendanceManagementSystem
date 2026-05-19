@@ -10,14 +10,23 @@ import studentRoutes from "./routes/student.js";
 import commonRoutes from "./routes/common.js";
 
 const app = express();
-// CORS configuration for production
+// CORS configuration for production (allowing local dev and any render.com subdomains)
 const corsOptions = {
-  origin: [
-    "http://localhost:5173", // Development
-    "https://attendancemanagementsystem-1-o34z.onrender.com", // Your actual frontend URL
-    "https://attendancemanagementsystem-7t71.onrender.com", // Your new backend URL
-    "https://attendancemanagementsystem.onrender.com", // Your old backend URL (for compatibility)
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or postman)
+    if (!origin) return callback(null, true);
+
+    const isAllowed =
+      origin.startsWith("http://localhost:") ||
+      origin.endsWith(".onrender.com") ||
+      origin === "https://attendancemanagementsystem.onrender.com";
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
