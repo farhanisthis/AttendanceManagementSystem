@@ -17,6 +17,11 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
+import StudentsPage from "./pages/StudentsPage";
+import TeachersPage from "./pages/TeachersPage";
+import TimetablePage from "./pages/TimetablePage";
+import SubjectsPage from "./pages/SubjectsPage";
+import AttendancePage from "./pages/AttendancePage";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 
@@ -333,6 +338,56 @@ export default function App() {
                 <ProtectedRoute>
                   <RoleRoute roles={["admin"]}>
                     <AdminDashboard />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/students"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={["admin"]}>
+                    <StudentsPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/teachers"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={["admin"]}>
+                    <TeachersPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/timetable"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={["admin"]}>
+                    <TimetablePage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/subjects"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={["admin"]}>
+                    <SubjectsPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/attendance"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute roles={["admin"]}>
+                    <AttendancePage />
                   </RoleRoute>
                 </ProtectedRoute>
               }

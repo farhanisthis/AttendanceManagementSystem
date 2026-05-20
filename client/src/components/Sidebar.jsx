@@ -21,57 +21,42 @@ export default function Sidebar({
   onCloseMobile,
 }) {
   const location = useLocation();
-  const currentTab = new URLSearchParams(location.search).get("tab") || "users";
 
   const isActive = (item) => {
-    if (item.path !== location.pathname) {
-      return false;
-    }
-
-    if (item.path === "/admin" && item.tab) {
-      return currentTab === item.tab;
-    }
-
-    return true;
+    return item.path === location.pathname;
   };
 
   const menuItems = {
     admin: [
       {
-        label: "Overview",
+        label: "Dashboard",
         icon: Home,
         path: "/admin",
-        tab: "users",
-      },
-      {
-        label: "Teachers",
-        icon: Users,
-        path: "/admin",
-        tab: "teachers",
       },
       {
         label: "Students",
         icon: Users,
-        path: "/admin",
-        tab: "students",
+        path: "/admin/students",
+      },
+      {
+        label: "Teachers",
+        icon: Users,
+        path: "/admin/teachers",
       },
       {
         label: "Subjects",
         icon: BookOpen,
-        path: "/admin",
-        tab: "subjects",
+        path: "/admin/subjects",
       },
       {
         label: "Timetable",
         icon: Clock,
-        path: "/admin",
-        tab: "timetable",
+        path: "/admin/timetable",
       },
       {
         label: "Attendance",
         icon: BarChart3,
-        path: "/admin",
-        tab: "attendance",
+        path: "/admin/attendance",
       },
     ],
     teacher: [
@@ -175,14 +160,11 @@ export default function Sidebar({
           {items.map((item) => {
             const Icon = item.icon;
             const active = isActive(item);
-            const to = item.tab
-              ? { pathname: item.path, search: `?tab=${item.tab}` }
-              : item.path;
 
             return (
-              <div key={`${item.path}-${item.tab || item.label}`}>
+              <div key={item.path}>
                 <Link
-                  to={to}
+                  to={item.path}
                   onClick={() => onCloseMobile?.()}
                   className={`flex items-center gap-3 rounded-md px-3 py-2.5 transition-all duration-200 ${
                     active
