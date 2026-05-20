@@ -13,7 +13,7 @@ export default function DashboardLayout({ children, user }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-950">
       <Sidebar
         userRole={user?.role}
         onLogout={handleLogout}
@@ -36,7 +36,9 @@ export default function DashboardLayout({ children, user }) {
           isSidebarCollapsed={isSidebarCollapsed}
         />
 
-        <main className="px-4 py-5 md:px-6 md:py-6">{children}</main>
+        <main className="px-4 py-6 md:px-8 md:py-8 bg-gradient-to-br from-slate-950 to-slate-900 min-h-[calc(100vh-56px)]">
+          <div className="mx-auto max-w-7xl">{children}</div>
+        </main>
       </div>
     </div>
   );
