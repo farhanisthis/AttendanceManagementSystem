@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { useSearchParams } from "react-router-dom";
 import api from "../api";
 
 import UserManagement from "../components/admin/UserManagement";
@@ -19,6 +20,16 @@ export default function AdminDashboard() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("users");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const validTabs = [
+    "users",
+    "teachers",
+    "students",
+    "timetable",
+    "subjects",
+    "teacher-students",
+    "attendance",
+  ];
 
   // Helper function to extract meaningful error messages
   const getErrorMessage = (error) => {
@@ -169,6 +180,18 @@ export default function AdminDashboard() {
     load();
   }, []);
 
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && validTabs.includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
+
   // Action callbacks passed down to subcomponents
   const registerUser = async (newUser) => {
     try {
@@ -266,7 +289,10 @@ export default function AdminDashboard() {
         role: newAssignment.role,
       };
 
-      await api.put(`/admin/users/${assigningTeacher._id}/assign-section`, assignmentData);
+      await api.put(
+        `/admin/users/${assigningTeacher._id}/assign-section`,
+        assignmentData,
+      );
       await load();
       toast.success(`Teacher assigned to ${subject.name} successfully!`);
       return true;
@@ -281,7 +307,9 @@ export default function AdminDashboard() {
   const removeTeacherAssignment = async (teacherId, assignmentIndex) => {
     if (window.confirm("Are you sure you want to remove this assignment?")) {
       try {
-        await api.delete(`/admin/users/${teacherId}/assignments/${assignmentIndex}`);
+        await api.delete(
+          `/admin/users/${teacherId}/assignments/${assignmentIndex}`,
+        );
         await load();
         toast.success("Assignment removed successfully!");
       } catch (error) {
@@ -301,7 +329,10 @@ export default function AdminDashboard() {
         description: mentorshipForm.description || "Academic Counseling",
       };
 
-      await api.put(`/admin/users/${assigningTeacher._id}/assign-mentorship`, mentorshipData);
+      await api.put(
+        `/admin/users/${assigningTeacher._id}/assign-mentorship`,
+        mentorshipData,
+      );
       await load();
       toast.success("Mentorship assigned successfully!");
       return true;
@@ -314,7 +345,11 @@ export default function AdminDashboard() {
   };
 
   const removeMentorship = async (teacherId) => {
-    if (window.confirm("Are you sure you want to remove this mentorship assignment?")) {
+    if (
+      window.confirm(
+        "Are you sure you want to remove this mentorship assignment?",
+      )
+    ) {
       try {
         await api.delete(`/admin/users/${teacherId}/mentorship`);
         await load();
@@ -327,8 +362,15 @@ export default function AdminDashboard() {
     }
   };
 
-  const addBulkSlots = async (selectedTeacher, selectedBatch, selectedSection, bulkSlots) => {
-    const validSlots = bulkSlots.filter((slot) => slot.subjectId && slot.startTime && slot.endTime);
+  const addBulkSlots = async (
+    selectedTeacher,
+    selectedBatch,
+    selectedSection,
+    bulkSlots,
+  ) => {
+    const validSlots = bulkSlots.filter(
+      (slot) => slot.subjectId && slot.startTime && slot.endTime,
+    );
     if (validSlots.length !== bulkSlots.length) {
       toast.error("Please fill in all required fields for all slots");
       return false;
@@ -346,12 +388,19 @@ export default function AdminDashboard() {
       try {
         await api.post("/admin/timetable/bulk", slotsData);
         await load();
-        toast.success(`Successfully created ${validSlots.length} timetable slots!`);
+        toast.success(
+          `Successfully created ${validSlots.length} timetable slots!`,
+        );
         return true;
       } catch (bulkError) {
-        console.error("Bulk scheduling failed, falling back to individual inserts...", bulkError);
+        console.error(
+          "Bulk scheduling failed, falling back to individual inserts...",
+          bulkError,
+        );
         if (bulkError.response?.data?.error?.includes("scheduling conflict")) {
-          toast.error(`${bulkError.response.data.error}: ${bulkError.response.data.details || ""}`);
+          toast.error(
+            `${bulkError.response.data.error}: ${bulkError.response.data.details || ""}`,
+          );
           return false;
         }
 
@@ -367,7 +416,9 @@ export default function AdminDashboard() {
 
         await load();
         if (successCount > 0) {
-          toast.success(`Scheduled ${successCount}/${validSlots.length} slots successfully!`);
+          toast.success(
+            `Scheduled ${successCount}/${validSlots.length} slots successfully!`,
+          );
           return true;
         } else {
           toast.error("Failed to schedule slots due to conflicts.");
@@ -381,7 +432,12 @@ export default function AdminDashboard() {
     }
   };
 
-  const addSlot = async (selectedTeacher, selectedBatch, selectedSection, newSlot) => {
+  const addSlot = async (
+    selectedTeacher,
+    selectedBatch,
+    selectedSection,
+    newSlot,
+  ) => {
     try {
       const slotData = {
         subjectId: newSlot.subject,
@@ -447,174 +503,198 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="text-center mb-12 animate-slide-up">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg animate-scale-in">
-          <span className="text-3xl">⚙️</span>
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-4 tracking-tight">
-          Admin Dashboard
-        </h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          Manage teachers, students, subjects, and timetables with modern administrative controls
+    <div className="space-y-6">
+      <div className="mb-2 border-b border-slate-200 pb-4">
+        <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          Institutional overview and management controls
         </p>
 
         {/* Global Loading / Error Indicators */}
         {isLoading && (
-          <div className="mt-4 flex justify-center items-center gap-2 text-blue-600 font-medium">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+          <div className="mt-3 flex items-center gap-2 text-sm font-medium text-blue-600">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
             <span>Syncing database...</span>
           </div>
         )}
 
         {error && (
-          <div className="mt-4 p-4 max-w-md mx-auto bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-4">
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between gap-4">
             <span className="text-sm text-red-600 font-medium">{error}</span>
-            <button className="btn btn-xs btn-primary text-white" onClick={load}>
+            <button
+              className="text-sm font-bold text-red-600 hover:text-red-700 transition-colors"
+              onClick={load}
+            >
               Retry
             </button>
           </div>
         )}
       </div>
 
-      {/* Dashboard Overview Cards */}
-      <div className="grid gap-6 md:grid-cols-4">
-        {/* Total Users */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-6 border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-2xl">👥</span>
-            <div className="text-right">
-              <div className="text-3xl font-black text-blue-600">{teachers.length + students.length}</div>
-              <div className="text-xs font-bold text-blue-500 uppercase tracking-wider">Registered Accounts</div>
+      <div className="space-y-6">
+        <section>
+          <h2 className="mb-3 text-base font-semibold text-slate-800">
+            Institutional Overview
+          </h2>
+          <div className="grid gap-3 md:grid-cols-4">
+            <div className="rounded-md border border-slate-200 bg-white p-4">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                Total Users
+              </div>
+              <div className="mb-2 text-3xl font-bold text-slate-900">
+                {teachers.length + students.length}
+              </div>
+              <div className="flex gap-3 text-xs">
+                <div>
+                  <span className="text-slate-600">Teachers:</span>
+                  <span className="font-bold text-slate-900 ml-2">
+                    {teachers.length}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-600">Students:</span>
+                  <span className="font-bold text-slate-900 ml-2">
+                    {students.length}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-md border border-slate-200 bg-white p-4">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                Active Subjects
+              </div>
+              <div className="mb-2 text-3xl font-bold text-slate-900">
+                {subjects.length}
+              </div>
+              <div className="text-xs text-slate-600">Registered courses</div>
+            </div>
+
+            <div className="rounded-md border border-slate-200 bg-white p-4">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                Scheduled Slots
+              </div>
+              <div className="mb-2 text-3xl font-bold text-slate-900">
+                {timetable.length}
+              </div>
+              <div className="text-xs text-slate-600">Classes scheduled</div>
+            </div>
+
+            <div className="rounded-md border border-slate-200 bg-white p-4">
+              <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                Marked Sessions
+              </div>
+              <div className="mb-2 text-3xl font-bold text-slate-900">
+                {attendance.length}
+              </div>
+              <div className="text-xs text-slate-600">Attendance records</div>
             </div>
           </div>
-          <div className="flex justify-between text-xs text-slate-500 pt-2 border-t border-blue-200/40">
-            <span>Faculty: <b>{teachers.length}</b></span>
-            <span>Students: <b>{students.length}</b></span>
+        </section>
+
+        <section>
+          <h2 className="mb-3 text-base font-semibold text-slate-800">
+            Quick Management
+          </h2>
+          <div className="grid gap-2 md:grid-cols-5">
+            {[
+              {
+                id: "users",
+                name: "User Management",
+                icon: "👥",
+                color: "blue",
+              },
+              {
+                id: "timetable",
+                name: "Timetable",
+                icon: "📅",
+                color: "purple",
+              },
+              { id: "subjects", name: "Subjects", icon: "📚", color: "green" },
+              {
+                id: "teacher-students",
+                name: "Assignments",
+                icon: "👨‍🎓",
+                color: "indigo",
+              },
+              {
+                id: "attendance",
+                name: "Attendance",
+                icon: "✅",
+                color: "orange",
+              },
+            ].map((action) => (
+              <button
+                key={action.id}
+                onClick={() => handleTabChange(action.id)}
+                className={`rounded-md border px-3 py-3 text-left transition-colors ${
+                  activeTab === action.id
+                    ? "border-blue-300 bg-blue-50 text-blue-700"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                }`}
+              >
+                <div className="mb-1 text-xl">{action.icon}</div>
+                <div className="text-xs font-semibold uppercase tracking-wide">
+                  {action.name}
+                </div>
+              </button>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Total Subjects */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-2xl p-6 border border-green-100 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-2xl">📚</span>
-            <div className="text-right">
-              <div className="text-3xl font-black text-green-600">{subjects.length}</div>
-              <div className="text-xs font-bold text-green-500 uppercase tracking-wider">Active Subjects</div>
-            </div>
+        <section className="rounded-md border border-slate-200 bg-white p-3 md:p-4">
+          <div>
+            {activeTab === "users" && (
+              <UserManagement
+                teachers={teachers}
+                students={students}
+                subjects={subjects}
+                registerUser={registerUser}
+                saveEditUser={saveEditUser}
+                deleteUser={deleteUser}
+                assignTeacherToSection={assignTeacherToSection}
+                removeTeacherAssignment={removeTeacherAssignment}
+                assignMentorship={assignMentorship}
+                removeMentorship={removeMentorship}
+                isRegistering={isRegistering}
+              />
+            )}
+
+            {activeTab === "timetable" && (
+              <TimetableManagement
+                teachers={teachers}
+                subjects={subjects}
+                timetable={timetable}
+                addBulkSlots={addBulkSlots}
+                addSlot={addSlot}
+                deleteSlot={deleteSlot}
+              />
+            )}
+
+            {activeTab === "subjects" && (
+              <SubjectManagement
+                subjects={subjects}
+                addSubject={addSubject}
+                deleteSubject={deleteSubject}
+              />
+            )}
+
+            {activeTab === "teacher-students" && (
+              <TeacherStudents teachers={teachers} subjects={subjects} />
+            )}
+
+            {activeTab === "attendance" && (
+              <AttendanceManagement
+                attendance={attendance}
+                isLoading={isLoading}
+                studentsCount={students.length}
+                teachersCount={teachers.length}
+                subjectsCount={subjects.length}
+                timetableCount={timetable.length}
+              />
+            )}
           </div>
-          <div className="text-xs text-slate-500 pt-2 border-t border-green-200/40">
-            Registered courses in database
-          </div>
-        </div>
-
-        {/* Timetable slots */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl p-6 border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-2xl">📅</span>
-            <div className="text-right">
-              <div className="text-3xl font-black text-purple-600">{timetable.length}</div>
-              <div className="text-xs font-bold text-purple-500 uppercase tracking-wider">Scheduled Slots</div>
-            </div>
-          </div>
-          <div className="text-xs text-slate-500 pt-2 border-t border-purple-200/40">
-            Lectures and tutorial slot blocks
-          </div>
-        </div>
-
-        {/* Attendance records */}
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-2xl p-6 border border-orange-100 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-2xl">✅</span>
-            <div className="text-right">
-              <div className="text-3xl font-black text-orange-600">{attendance.length}</div>
-              <div className="text-xs font-bold text-orange-500 uppercase tracking-wider">Marked Sessions</div>
-            </div>
-          </div>
-          <div className="text-xs text-slate-500 pt-2 border-t border-orange-200/40">
-            Sessions signed by teachers
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs Controls */}
-      <div className="flex justify-center my-8">
-        <div className="inline-flex flex-wrap justify-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl">
-          {[
-            { id: "users", name: "User Management", icon: "👥" },
-            { id: "timetable", name: "Timetable", icon: "📅" },
-            { id: "subjects", name: "Subjects", icon: "📚" },
-            { id: "teacher-students", name: "Teacher-Students", icon: "👨‍🎓" },
-            { id: "attendance", name: "Attendance", icon: "✅" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-4 font-bold text-xs sm:text-sm rounded-xl cursor-pointer transition-all duration-200 ${
-                activeTab === tab.id
-                  ? "bg-white text-blue-700 shadow-md"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
-              }`}
-            >
-              <span className="mr-1.5">{tab.icon}</span>
-              {tab.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab Contents */}
-      <div className="animate-slide-up">
-        {activeTab === "users" && (
-          <UserManagement
-            teachers={teachers}
-            students={students}
-            subjects={subjects}
-            registerUser={registerUser}
-            saveEditUser={saveEditUser}
-            deleteUser={deleteUser}
-            assignTeacherToSection={assignTeacherToSection}
-            removeTeacherAssignment={removeTeacherAssignment}
-            assignMentorship={assignMentorship}
-            removeMentorship={removeMentorship}
-            isRegistering={isRegistering}
-          />
-        )}
-
-        {activeTab === "timetable" && (
-          <TimetableManagement
-            teachers={teachers}
-            subjects={subjects}
-            timetable={timetable}
-            addBulkSlots={addBulkSlots}
-            addSlot={addSlot}
-            deleteSlot={deleteSlot}
-          />
-        )}
-
-        {activeTab === "subjects" && (
-          <SubjectManagement
-            subjects={subjects}
-            addSubject={addSubject}
-            deleteSubject={deleteSubject}
-          />
-        )}
-
-        {activeTab === "teacher-students" && (
-          <TeacherStudents teachers={teachers} subjects={subjects} />
-        )}
-
-        {activeTab === "attendance" && (
-          <AttendanceManagement
-            attendance={attendance}
-            isLoading={isLoading}
-            studentsCount={students.length}
-            teachersCount={teachers.length}
-            subjectsCount={subjects.length}
-            timetableCount={timetable.length}
-          />
-        )}
+        </section>
       </div>
     </div>
   );

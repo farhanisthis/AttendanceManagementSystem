@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import api from "../api";
 import { useAuth } from "../AuthContext";
-import Section from "../components/Section";
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -112,7 +111,7 @@ export default function TeacherDashboard() {
 
       // Filter students by the selected class/batch
       const filteredStudents = data.filter(
-        (student) => student.classOrBatch === classOrBatch
+        (student) => student.classOrBatch === classOrBatch,
       );
       setStudents(filteredStudents);
 
@@ -133,7 +132,7 @@ export default function TeacherDashboard() {
   const checkExistingAttendance = async (timetableId, date) => {
     try {
       const { data } = await api.get(
-        `/teacher/attendance/check?timetableId=${timetableId}&date=${date}`
+        `/teacher/attendance/check?timetableId=${timetableId}&date=${date}`,
       );
       if (data && data.records) {
         setExistingAttendance(data);
@@ -258,7 +257,7 @@ export default function TeacherDashboard() {
       const presentCount = records.filter((r) => r.status === "present").length;
       const absentCount = records.filter((r) => r.status === "absent").length;
       toast.success(
-        `Attendance saved! ${presentCount} present, ${absentCount} absent`
+        `Attendance saved! ${presentCount} present, ${absentCount} absent`,
       );
     } catch (error) {
       console.error("Error saving attendance:", error);
@@ -271,48 +270,48 @@ export default function TeacherDashboard() {
 
   const sorted = useMemo(
     () => [...slots].sort((a, b) => a.startTime.localeCompare(b.startTime)),
-    [slots]
+    [slots],
   );
 
   return (
-    <div className="space-y-8">
-      <div className="text-center mb-12 animate-slide-up">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg animate-scale-in">
-          <span className="text-3xl">👨‍🏫</span>
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-4 tracking-tight">
-          Teacher Dashboard
-        </h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          Manage your classes and mark student attendance efficiently
+    <div className="space-y-6">
+      <div className="border-b border-slate-200 pb-4">
+        <h1 className="text-3xl font-bold text-slate-900">Teacher Dashboard</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          Manage your classes and mark student attendance
         </p>
       </div>
 
-      {/* Teacher Assignments Section */}
+      {/* Teacher Profile & Assignments */}
       {isLoadingProfile ? (
-        <Section title="Loading Assignments..." icon="⏳">
-          <div className="text-center py-8">
-            <div className="loading loading-spinner loading-lg text-blue-600"></div>
-            <p className="text-gray-600 mt-4">Loading your assignments...</p>
-          </div>
-        </Section>
+        <div className="p-8 bg-slate-50 rounded-lg text-center">
+          <div className="inline-block text-4xl mb-4">⏳</div>
+          <p className="text-slate-600">Loading your assignments...</p>
+        </div>
       ) : (teacherAssignments && teacherAssignments.length > 0) ||
         (mentorship && mentorship.classOrBatch) ? (
-        <Section title="Your Assignments & Mentorship" icon="📚">
+        <div className="rounded-md border border-slate-200 bg-white p-5">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+            Your Assignments
+          </h2>
+
           {/* Teaching Assignments */}
           {teacherAssignments &&
             teacherAssignments.length > 0 &&
             teacherAssignments.filter((a) => a.role === "teaching").length >
               0 && (
-              <div className="mb-4">
-                <h4 className="font-medium text-gray-700 mb-2">
-                  Teaching Assignments:
-                </h4>
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">
+                  Teaching Assignments
+                </h3>
                 <div className="flex flex-wrap gap-3">
                   {teacherAssignments
                     .filter((a) => a.role === "teaching")
                     .map((assignment, index) => (
-                      <div key={index} className="badge badge-primary badge-lg">
+                      <div
+                        key={index}
+                        className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
+                      >
                         {assignment.classOrBatch}
                         {assignment.subjectName &&
                           ` - ${assignment.subjectName}`}
@@ -324,256 +323,280 @@ export default function TeacherDashboard() {
 
           {/* Mentorship Assignment */}
           {mentorship && mentorship.classOrBatch && (
-            <div className="mb-4">
-              <h4 className="font-medium text-blue-700 mb-2">Mentorship:</h4>
+            <div>
+              <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">
+                Mentorship Role
+              </h3>
               <div className="flex flex-wrap gap-3">
-                <div className="badge badge-outline  badge-secondary badge-lg">
+                <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
                   {mentorship.classOrBatch}
                 </div>
                 {mentorship.description && (
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="text-sm text-slate-600 self-center">
                     {mentorship.description}
                   </div>
                 )}
               </div>
             </div>
           )}
-
-          <p className="text-sm text-gray-600 mt-3">
-            You can mark attendance for students in your teaching assignments.
-            Mentorship provides academic guidance.
-          </p>
-        </Section>
+        </div>
       ) : (
-        <Section title="No Assignments" icon="⚠️">
-          <div className="text-center py-4">
-            <p className="text-gray-600">
-              You haven't been assigned to any sections yet.
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              Please contact your administrator for section assignments.
-            </p>
-          </div>
-        </Section>
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-5 text-center">
+          <p className="text-slate-700 font-medium mb-2">No assignments yet</p>
+          <p className="text-sm text-slate-600">
+            Please contact your administrator for section assignments.
+          </p>
+        </div>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <Section title="Weekly Schedule" icon="📅">
-          <div className="space-y-4">
-            <div className="flex gap-2 items-center mb-4">
-              <span className="text-slate-600 font-medium">
-                Teacher: {user.name}
-              </span>
+      {/* Main Content Area */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-1">
+          <div className="sticky top-16 rounded-md border border-slate-200 bg-white p-4">
+            <h3 className="mb-4 text-base font-semibold text-slate-900">
+              Weekly Schedule
+            </h3>
+
+            <div className="mb-6">
+              <p className="text-sm text-slate-600 font-medium">
+                You:{" "}
+                <span className="font-bold text-slate-900">{user.name}</span>
+              </p>
             </div>
 
-            {/* Day Selection Boxes */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {days.map((day) => (
-                <button
-                  key={day.id}
-                  onClick={() => setSelectedDay(day.id)}
-                  className={`p-3 rounded-xl border-2 transition-all duration-200 hover:shadow-md text-center ${
-                    selectedDay === day.id
-                      ? "border-blue-500 bg-blue-50 text-blue-800 shadow-md ring-2 ring-blue-200"
-                      : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  <div className="font-bold text-base">{day.short}</div>
-                  <div className="text-xs opacity-70 mt-0.5">{day.name}</div>
-                </button>
-              ))}
+            {/* Day Selection */}
+            <div className="space-y-2 mb-6">
+              <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Select Day
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {days.map((day) => (
+                  <button
+                    key={day.id}
+                    onClick={() => setSelectedDay(day.id)}
+                    className={`rounded-md p-2 text-sm font-semibold transition-all ${
+                      selectedDay === day.id
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {day.short}
+                  </button>
+                ))}
+              </div>
             </div>
 
+            {/* Time Slots */}
             <div className="space-y-2">
-              {sorted.map((tt) => (
-                <button
-                  key={tt._id}
-                  onClick={() => onSelect(tt)}
-                  className={`w-full text-left p-3 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                    selected?._id === tt._id
-                      ? "border-blue-500 bg-blue-50 text-blue-800"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="font-medium">
-                    {tt.startTime} - {tt.endTime}
-                  </div>
-                  <div className="text-sm text-slate-600">
-                    {tt.subjectId?.name} • {tt.classOrBatch}
-                  </div>
-                </button>
-              ))}
-              {sorted.length === 0 && (
-                <div className="text-center text-slate-500 py-8">
-                  No classes scheduled for this day
+              <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                Your Classes
+              </p>
+              {sorted.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <p className="text-sm">No classes scheduled</p>
                 </div>
+              ) : (
+                sorted.map((tt) => (
+                  <button
+                    key={tt._id}
+                    onClick={() => onSelect(tt)}
+                    className={`w-full rounded-md border p-2.5 text-left transition-all ${
+                      selected?._id === tt._id
+                        ? "border-blue-300 bg-blue-50 text-slate-900"
+                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="font-bold text-sm">
+                      {tt.startTime} - {tt.endTime}
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1">
+                      {tt.subjectId?.name}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {tt.classOrBatch}
+                    </div>
+                  </button>
+                ))
               )}
             </div>
           </div>
-        </Section>
+        </div>
 
-        <Section title="Mark Attendance" icon="✅">
+        <div className="lg:col-span-2">
           {!selected ? (
-            <div className="text-center text-slate-500 py-12">
-              Select a class slot from the left to mark attendance
+            <div className="rounded-md border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center">
+              <div className="mb-2 text-4xl">📋</div>
+              <p className="text-slate-600 text-lg font-medium">
+                Select a class from the left
+              </p>
+              <p className="text-slate-500 text-sm mt-2">to mark attendance</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2 items-center p-3 bg-slate-50 rounded-lg">
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                  {selected.subjectId?.name}
-                </span>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                  {selected.classOrBatch}
-                </span>
-                <input
-                  type="date"
-                  className="input input-bordered input-sm"
-                  value={date}
-                  onChange={(e) => onDateChange(e.target.value)}
-                />
-              </div>
-
-              {existingAttendance && (
-                <div className="alert alert-info">
-                  <span>
-                    📝 Attendance already marked for this date. You can edit
-                    below.
-                  </span>
+            <div className="space-y-6">
+              <div className="rounded-md border border-slate-200 bg-white p-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <div className="text-sm text-slate-600 font-medium mb-1">
+                      Subject
+                    </div>
+                    <div className="text-xl font-semibold text-slate-900">
+                      {selected.subjectId?.name}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-slate-600 font-medium mb-1">
+                      Class
+                    </div>
+                    <div className="text-xl font-semibold text-slate-900">
+                      {selected.classOrBatch}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-600 font-medium block mb-1">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => onDateChange(e.target.value)}
+                      className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
                 </div>
-              )}
 
-              <div
-                className={`overflow-x-auto ${
-                  students && students.length > 10 && !showAllStudents
-                    ? "max-h-96 overflow-y-auto"
-                    : ""
-                }`}
-              >
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Enrollment</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {students && students.length > 0 ? (
-                      students.map((s) => (
-                        <tr key={s._id}>
-                          <td className="font-medium">{s.name}</td>
-                          <td className="text-slate-600">
-                            {s.enrollment || "Not provided"}
-                          </td>
-                          <td>
-                            <button
-                              onClick={() => toggleAttendance(s._id)}
-                              className={`btn btn-sm ${
-                                mark[s._id] === "present"
-                                  ? "btn-success"
-                                  : "btn-error"
-                              }`}
-                            >
-                              {mark[s._id] === "present"
-                                ? "✅ Present"
-                                : "❌ Absent"}
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="3"
-                          className="text-center text-slate-500 py-4"
-                        >
-                          No students enrolled in this class
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-
-                {/* Expand/Collapse Button */}
-                {students && students.length > 10 && (
-                  <div className="flex justify-center mt-4">
-                    <button
-                      onClick={() => setShowAllStudents(!showAllStudents)}
-                      className="btn btn-outline btn-sm"
-                    >
-                      {showAllStudents
-                        ? "Collapse View"
-                        : `Expand View (${students.length} students)`}
-                    </button>
+                {existingAttendance && (
+                  <div className="mt-4 p-3 bg-amber-100 border border-amber-300 rounded-lg text-sm text-amber-900 font-medium">
+                    ✏️ Attendance already marked. You can edit below.
                   </div>
                 )}
               </div>
 
-              {/* Quick Stats Bar */}
+              <div className="overflow-hidden rounded-md border border-slate-200 bg-white">
+                <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                  <table className="w-full">
+                    <thead className="sticky top-0 border-b border-slate-200 bg-slate-50">
+                      <tr>
+                        <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          Student Name
+                        </th>
+                        <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          Enrollment
+                        </th>
+                        <th className="px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {students && students.length > 0 ? (
+                        students.map((s) => (
+                          <tr
+                            key={s._id}
+                            className="odd:bg-white even:bg-slate-50/30 hover:bg-blue-50/50"
+                          >
+                            <td className="px-4 py-2.5 font-medium text-slate-900">
+                              {s.name}
+                            </td>
+                            <td className="px-4 py-2.5 text-sm text-slate-600">
+                              {s.enrollment || "-"}
+                            </td>
+                            <td className="px-4 py-2.5 text-center">
+                              <button
+                                onClick={() => toggleAttendance(s._id)}
+                                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                                  mark[s._id] === "present"
+                                    ? "bg-green-100 text-green-700 border border-green-300"
+                                    : "bg-red-100 text-red-700 border border-red-300"
+                                }`}
+                              >
+                                {mark[s._id] === "present"
+                                  ? "✅ Present"
+                                  : "❌ Absent"}
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="3"
+                            className="px-6 py-8 text-center text-slate-500"
+                          >
+                            No students in this class
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               {students && students.length > 0 && (
-                <div className="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200/60">
-                  <div className="flex-1 text-center">
-                    <div className="text-lg font-bold text-slate-700">{students.length}</div>
-                    <div className="text-xs text-slate-500 font-medium">Total</div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-md border border-slate-200 bg-white p-3 text-center">
+                    <div className="mb-0.5 text-2xl font-bold text-slate-900">
+                      {students.length}
+                    </div>
+                    <div className="text-xs text-slate-600 font-medium">
+                      Total Students
+                    </div>
                   </div>
-                  <div className="w-px bg-slate-200" />
-                  <div className="flex-1 text-center">
-                    <div className="text-lg font-bold text-emerald-600">{Object.values(mark).filter(v => v === "present").length}</div>
-                    <div className="text-xs text-emerald-600 font-medium">Present</div>
+                  <div className="rounded-md border border-green-200 bg-green-50 p-3 text-center">
+                    <div className="mb-0.5 text-2xl font-bold text-green-600">
+                      {
+                        Object.values(mark).filter((v) => v === "present")
+                          .length
+                      }
+                    </div>
+                    <div className="text-xs text-green-700 font-medium">
+                      Present
+                    </div>
                   </div>
-                  <div className="w-px bg-slate-200" />
-                  <div className="flex-1 text-center">
-                    <div className="text-lg font-bold text-red-600">{Object.values(mark).filter(v => v === "absent").length}</div>
-                    <div className="text-xs text-red-600 font-medium">Absent</div>
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3 text-center">
+                    <div className="mb-0.5 text-2xl font-bold text-red-600">
+                      {Object.values(mark).filter((v) => v === "absent").length}
+                    </div>
+                    <div className="text-xs text-red-700 font-medium">
+                      Absent
+                    </div>
                   </div>
                 </div>
               )}
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-3 pt-2">
                 <button
-                  className="btn btn-primary flex-1"
                   onClick={submit}
                   disabled={students.length === 0 || isSubmitting}
+                  className="flex-1 rounded-md bg-blue-600 py-2.5 font-semibold text-white transition-all hover:bg-blue-700 disabled:bg-slate-300"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <span className="loading-spinner loading-sm"></span>
-                      Saving...
-                    </>
-                  ) : isEditing ? (
-                    "Update Attendance"
-                  ) : (
-                    "Save Attendance"
-                  )}
+                  {isSubmitting
+                    ? "Saving..."
+                    : isEditing
+                      ? "Update Attendance"
+                      : "Save Attendance"}
                 </button>
-                <a className="btn btn-outline" href="/teacher/reports/csv">
+                <a
+                  href="/teacher/reports/csv"
+                  className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
+                >
                   Export CSV
                 </a>
               </div>
 
               {msg && (
                 <div
-                  className={`alert ${
-                    msg.includes("Error") ? "alert-error" : "alert-success"
-                  } mt-3`}
+                  className={`p-4 rounded-lg font-medium ${
+                    msg.includes("Error")
+                      ? "bg-red-50 border border-red-200 text-red-700"
+                      : "bg-green-50 border border-green-200 text-green-700"
+                  }`}
                 >
-                  <span>
-                    {msg.includes("Error") ? "❌" : "✅"} {msg}
-                  </span>
-                  {!msg.includes("Error") && (
-                    <button
-                      className="btn btn-sm btn-ghost"
-                      onClick={() => setMsg("")}
-                    >
-                      ✕
-                    </button>
-                  )}
+                  {msg.includes("Error") ? "❌" : "✅"} {msg}
                 </div>
               )}
             </div>
           )}
-        </Section>
+        </div>
       </div>
     </div>
   );

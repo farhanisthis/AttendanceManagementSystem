@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { Mail, Lock, User, BookOpen, Eye, EyeOff, ArrowRight } from "lucide-react";
 import api from "../api";
 
-const Register = () => {
-  const navigate = useNavigate();
+export default function Register() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,11 +13,43 @@ const Register = () => {
     role: "student",
     enrollment: "",
     phone: "",
-    sections: [],
     batch: "",
     section: "",
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const navigate = useNavigate();
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Full name is required";
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+    if (formData.role === "student" && !formData.enrollment.trim()) {
+      newErrors.enrollment = "Enrollment number is required for students";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,46 +57,44 @@ const Register = () => {
       ...prev,
       [name]: value,
     }));
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters long");
-      return;
-    }
-
-    if (formData.role === "student" && !formData.enrollment) {
-      toast.error("Enrollment number is required for students");
+    if (!validateForm()) {
+      toast.error("Please fix the errors above");
       return;
     }
 
     setIsLoading(true);
-
     try {
       const response = await api.post("/auth/register", {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         role: formData.role,
-        enrollment: formData.enrollment || undefined,
-        phone: formData.phone || undefined,
-        sections: formData.sections.length > 0 ? formData.sections : undefined,
-        batch: formData.batch || undefined,
-        section: formData.section || undefined,
+        ...(formData.role === "student" && {
+          enrollment: formData.enrollment,
+          batch: formData.batch || undefined,
+          section: formData.section || undefined,
+        }),
+        ...(formData.phone && { phone: formData.phone }),
       });
 
-      toast.success(response.data.message);
-      navigate("/login");
+      if (response.data.success || response.data.message) {
+        toast.success("Registration successful! Redirecting to login...");
+        setTimeout(() => navigate("/login"), 1500);
+      }
     } catch (error) {
-      const errorMessage = error.response?.data?.error || "Registration failed";
+      const errorMessage =
+        error.response?.data?.error || "Registration failed. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -72,236 +102,325 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full animate-slide-up">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-200/80">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-4 shadow-lg animate-scale-in">
-              <span className="text-3xl">🎓</span>
+    <div className="min-h-screen bg-white">
+      <div className="grid lg:grid-cols-2 gap-0 min-h-screen">
+        {/* Left - Dashboard Preview */}
+        <div className="hidden lg:flex bg-gradient-to-br from-blue-50 to-indigo-50 p-12 items-center justify-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full opacity-20 -mr-48"></div>
+          <div className="relative z-10 w-full max-w-sm">
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-blue-100">
+              {/* Mock Dashboard Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                    <span className="text-blue-600 font-bold">A</span>
+                  </div>
+                  <h3 className="text-white font-bold">Admin Dashboard</h3>
+                </div>
+              </div>
+
+              {/* Mock Stats */}
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <div className="text-2xl font-black text-blue-600 mb-1">
+                      123
+                    </div>
+                    <div className="text-xs text-slate-600 font-medium">
+                      Active Users
+                    </div>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <div className="text-2xl font-black text-green-600 mb-1">
+                      26
+                    </div>
+                    <div className="text-xs text-slate-600 font-medium">
+                      Subjects
+                    </div>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <div className="text-2xl font-black text-purple-600 mb-1">
+                      27
+                    </div>
+                    <div className="text-xs text-slate-600 font-medium">
+                      Timetables
+                    </div>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                    <div className="text-2xl font-black text-orange-600 mb-1">
+                      98%
+                    </div>
+                    <div className="text-xs text-slate-600 font-medium">
+                      Attendance
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-200">
+                  <p className="text-xs text-slate-500 font-semibold uppercase mb-3">
+                    Empowering Campus Administration
+                  </p>
+                  <p className="text-sm font-bold text-slate-900 mb-2">
+                    Join thousands of educators and students managing daily
+                    attendance with precision and ease.
+                  </p>
+                </div>
+              </div>
             </div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">
-              Create Account
-            </h1>
-            <p className="text-slate-600">Join the AttendEase system</p>
           </div>
+        </div>
 
-          {/* Registration Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
+        {/* Right - Register Form */}
+        <div className="flex items-center justify-center px-4 py-12 lg:py-0">
+          <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-4xl font-black text-slate-900 mb-2">
+                Create Account
+              </h1>
+              <p className="text-slate-600">
+                Enter your institutional details to get started.
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Full Name */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Full Name *
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                  Full Name
                 </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Enter your full name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Password *
-                  </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                   <input
-                    type="password"
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 text-sm transition-all ${
+                      errors.name
+                        ? "border-red-500 bg-red-50"
+                        : "border-slate-300 hover:border-slate-400"
+                    }`}
+                  />
+                </div>
+                {errors.name && (
+                  <p className="text-xs text-red-600 mt-1.5">{errors.name}</p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="john@university.edu"
+                    className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 text-sm transition-all ${
+                      errors.email
+                        ? "border-red-500 bg-red-50"
+                        : "border-slate-300 hover:border-slate-400"
+                    }`}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-xs text-red-600 mt-1.5">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    required
-                    minLength={6}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Min 6 characters"
+                    placeholder="Enter password"
+                    className={`w-full pl-12 pr-11 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 text-sm transition-all ${
+                      errors.password
+                        ? "border-red-500 bg-red-50"
+                        : "border-slate-300 hover:border-slate-400"
+                    }`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors pointer-events-auto"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-red-600 mt-1.5">
+                    {errors.password}
+                  </p>
+                )}
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Confirm Password *
-                  </label>
+              {/* Confirm Password */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Confirm password"
+                    className={`w-full pl-12 pr-11 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 text-sm transition-all ${
+                      errors.confirmPassword
+                        ? "border-red-500 bg-red-50"
+                        : "border-slate-300 hover:border-slate-400"
+                    }`}
                   />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors pointer-events-auto"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs text-red-600 mt-1.5">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
 
+              {/* Role Selection */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Role *
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                  User Role
                 </label>
                 <select
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 text-sm hover:border-slate-400 transition-all bg-white"
                 >
                   <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
-                  <option value="admin">Admin</option>
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Enter phone number (optional)"
-                />
-              </div>
-            </div>
-
-            {/* Role-specific fields */}
-            {formData.role === "student" && (
-              <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 className="font-medium text-blue-800">
-                  Student Information
-                </h3>
-
-                <div>
-                  <label className="block text-sm font-medium text-blue-700 mb-2">
-                    Enrollment Number *
-                  </label>
-                  <input
-                    type="text"
-                    name="enrollment"
-                    value={formData.enrollment}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter enrollment number"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+              {/* Enrollment Number (for students) */}
+              {formData.role === "student" && (
+                <>
                   <div>
-                    <label className="block text-sm font-medium text-blue-700 mb-2">
-                      Batch
+                    <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                      Enrollment Number
                     </label>
-                    <input
-                      type="text"
-                      name="batch"
-                      value={formData.batch}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="e.g., 1st year"
-                    />
+                    <div className="relative">
+                      <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        name="enrollment"
+                        value={formData.enrollment}
+                        onChange={handleChange}
+                        placeholder="EN-2024-001"
+                        className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 text-sm transition-all ${
+                          errors.enrollment
+                            ? "border-red-500 bg-red-50"
+                            : "border-slate-300 hover:border-slate-400"
+                        }`}
+                      />
+                    </div>
+                    {errors.enrollment && (
+                      <p className="text-xs text-red-600 mt-1.5">
+                        {errors.enrollment}
+                      </p>
+                    )}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-blue-700 mb-2">
-                      Section
-                    </label>
-                    <input
-                      type="text"
-                      name="section"
-                      value={formData.section}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="e.g., E1, M1"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                        Batch
+                      </label>
+                      <input
+                        type="text"
+                        name="batch"
+                        value={formData.batch}
+                        onChange={handleChange}
+                        placeholder="First Year"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 text-sm hover:border-slate-400 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">
+                        Section
+                      </label>
+                      <input
+                        type="text"
+                        name="section"
+                        value={formData.section}
+                        onChange={handleChange}
+                        placeholder="Section A"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 text-sm hover:border-slate-400 transition-all"
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {formData.role === "teacher" && (
-              <div className="space-y-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-                <h3 className="font-medium text-indigo-800">
-                  Teacher Information
-                </h3>
-
-                <div>
-                  <label className="block text-sm font-medium text-indigo-700 mb-2">
-                    Sections (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    name="sections"
-                    value={formData.sections.join(", ")}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        sections: e.target.value
-                          .split(",")
-                          .map((s) => s.trim())
-                          .filter((s) => s),
-                      }))
-                    }
-                    className="w-full px-4 py-3 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="e.g., E1, E2, M1"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium py-3 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-800 focus:ring-4 focus:ring-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Creating Account...
-                </div>
-              ) : (
-                "Create Account"
+                </>
               )}
-            </button>
-          </form>
 
-          {/* Login Link */}
-          <div className="text-center mt-6">
-            <p className="text-slate-600">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 text-sm mt-8 flex items-center justify-center gap-2"
               >
-                Sign in here
-              </Link>
-            </p>
+                {isLoading ? (
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                ) : (
+                  <>
+                    Register Account
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Sign In Link */}
+            <div className="mt-6 text-center">
+              <p className="text-slate-600 text-sm">
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
+                >
+                  Sign In
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default Register;
+}

@@ -137,7 +137,10 @@ export default function UserManagement({
   };
 
   const handleAssignTeacher = async () => {
-    const success = await assignTeacherToSection(assigningTeacher, newAssignment);
+    const success = await assignTeacherToSection(
+      assigningTeacher,
+      newAssignment,
+    );
     if (success) {
       cancelAssignTeacher();
     }
@@ -160,7 +163,9 @@ export default function UserManagement({
           <Section title="Register New User" icon="👤">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 items-end">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Full Name</label>
+                <label className="text-sm font-medium text-slate-700">
+                  Full Name
+                </label>
                 <input
                   className="input input-bordered w-full"
                   placeholder="Enter full name"
@@ -172,7 +177,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Email Address</label>
+                <label className="text-sm font-medium text-slate-700">
+                  Email Address
+                </label>
                 <input
                   className="input input-bordered w-full"
                   type="email"
@@ -185,7 +192,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Password</label>
+                <label className="text-sm font-medium text-slate-700">
+                  Password
+                </label>
                 <input
                   className="input input-bordered w-full"
                   type="password"
@@ -198,7 +207,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Phone (Optional)</label>
+                <label className="text-sm font-medium text-slate-700">
+                  Phone (Optional)
+                </label>
                 <input
                   className="input input-bordered w-full"
                   placeholder="Contact number"
@@ -210,7 +221,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">System Role</label>
+                <label className="text-sm font-medium text-slate-700">
+                  System Role
+                </label>
                 <select
                   className="select select-bordered w-full"
                   value={newUser.role}
@@ -226,7 +239,9 @@ export default function UserManagement({
               {newUser.role === "student" ? (
                 <>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Academic Year & Section</label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Academic Year & Section
+                    </label>
                     <div className="grid grid-cols-2 gap-2">
                       <select
                         className="select select-bordered w-full"
@@ -236,7 +251,10 @@ export default function UserManagement({
                           setNewUser((v) => ({
                             ...v,
                             batch: newBatch,
-                            classOrBatch: newBatch && v.section ? `${newBatch} - ${v.section}` : "",
+                            classOrBatch:
+                              newBatch && v.section
+                                ? `${newBatch} - ${v.section}`
+                                : "",
                           }));
                         }}
                       >
@@ -254,7 +272,10 @@ export default function UserManagement({
                           setNewUser((v) => ({
                             ...v,
                             section: newSection,
-                            classOrBatch: v.batch && newSection ? `${v.batch} - ${newSection}` : "",
+                            classOrBatch:
+                              v.batch && newSection
+                                ? `${v.batch} - ${newSection}`
+                                : "",
                           }));
                         }}
                       >
@@ -268,20 +289,27 @@ export default function UserManagement({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Enrollment Number</label>
+                    <label className="text-sm font-medium text-slate-700">
+                      Enrollment Number
+                    </label>
                     <input
                       className="input input-bordered w-full"
                       placeholder="e.g., 2024CS001"
                       value={newUser.enrollment}
                       onChange={(e) =>
-                        setNewUser((v) => ({ ...v, enrollment: e.target.value }))
+                        setNewUser((v) => ({
+                          ...v,
+                          enrollment: e.target.value,
+                        }))
                       }
                     />
                   </div>
                 </>
               ) : (
                 <div className="space-y-2 col-span-2">
-                  <label className="text-sm font-medium text-slate-700">Teachable Sections (Comma separated)</label>
+                  <label className="text-sm font-medium text-slate-700">
+                    Teachable Sections (Comma separated)
+                  </label>
                   <input
                     className="input input-bordered w-full"
                     placeholder="e.g., E1, E2, M1"
@@ -309,7 +337,9 @@ export default function UserManagement({
                     !newUser.password ||
                     isRegistering ||
                     (newUser.role === "student" &&
-                      (!newUser.batch || !newUser.section || !newUser.enrollment))
+                      (!newUser.batch ||
+                        !newUser.section ||
+                        !newUser.enrollment))
                   }
                 >
                   {isRegistering ? (
@@ -331,7 +361,9 @@ export default function UserManagement({
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm">
         <div className="grid gap-4 md:grid-cols-3 items-end">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Search Accounts</label>
+            <label className="text-sm font-medium text-slate-700">
+              Search Accounts
+            </label>
             <input
               type="text"
               placeholder="Search by name, email, enrollment..."
@@ -342,7 +374,9 @@ export default function UserManagement({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Filter Assigned Context</label>
+            <label className="text-sm font-medium text-slate-700">
+              Filter Assigned Context
+            </label>
             <select
               className="select select-bordered w-full bg-white"
               value={filterRole}
@@ -377,8 +411,12 @@ export default function UserManagement({
                 <th className="font-semibold text-slate-700">Name</th>
                 <th className="font-semibold text-slate-700">Email</th>
                 <th className="font-semibold text-slate-700">Phone</th>
-                <th className="font-semibold text-slate-700">Assignments & Mentorship</th>
-                <th className="font-semibold text-slate-700 text-right">Actions</th>
+                <th className="font-semibold text-slate-700">
+                  Assignments & Mentorship
+                </th>
+                <th className="font-semibold text-slate-700 text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -387,14 +425,19 @@ export default function UserManagement({
                 if (filterRole === "teacher") {
                   list = teachers.filter(
                     (t) =>
-                      t.teacherAssignments?.some((a) => a.role === "teaching") &&
-                      (!t.mentorship || !t.mentorship.classOrBatch)
+                      t.teacherAssignments?.some(
+                        (a) => a.role === "teaching",
+                      ) &&
+                      (!t.mentorship || !t.mentorship.classOrBatch),
                   );
                 } else if (filterRole === "student") {
                   list = teachers.filter(
                     (t) =>
                       t.mentorship?.classOrBatch &&
-                      (!t.teacherAssignments || !t.teacherAssignments.some((a) => a.role === "teaching"))
+                      (!t.teacherAssignments ||
+                        !t.teacherAssignments.some(
+                          (a) => a.role === "teaching",
+                        )),
                   );
                 }
 
@@ -403,14 +446,17 @@ export default function UserManagement({
                   list = list.filter(
                     (t) =>
                       t.name.toLowerCase().includes(term) ||
-                      t.email.toLowerCase().includes(term)
+                      t.email.toLowerCase().includes(term),
                   );
                 }
 
                 if (list.length === 0) {
                   return (
                     <tr>
-                      <td colSpan="5" className="text-center py-8 text-slate-400 italic">
+                      <td
+                        colSpan="5"
+                        className="text-center py-8 text-slate-400 italic"
+                      >
                         No faculty members found matching your search.
                       </td>
                     </tr>
@@ -420,16 +466,23 @@ export default function UserManagement({
                 const displayed = showAllTeachers ? list : list.slice(0, 10);
 
                 return displayed.map((t) => (
-                  <tr key={t._id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={t._id}
+                    className="hover:bg-slate-50/50 transition-colors"
+                  >
                     <td>
                       {editingUser?._id === t._id ? (
                         <input
                           className="input input-bordered input-sm w-full"
                           value={editForm.name}
-                          onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((f) => ({ ...f, name: e.target.value }))
+                          }
                         />
                       ) : (
-                        <div className="font-semibold text-slate-800">{t.name}</div>
+                        <div className="font-semibold text-slate-800">
+                          {t.name}
+                        </div>
                       )}
                     </td>
                     <td>
@@ -437,10 +490,17 @@ export default function UserManagement({
                         <input
                           className="input input-bordered input-sm w-full"
                           value={editForm.email}
-                          onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((f) => ({
+                              ...f,
+                              email: e.target.value,
+                            }))
+                          }
                         />
                       ) : (
-                        <div className="text-slate-600 font-medium">{t.email}</div>
+                        <div className="text-slate-600 font-medium">
+                          {t.email}
+                        </div>
                       )}
                     </td>
                     <td>
@@ -448,7 +508,12 @@ export default function UserManagement({
                         <input
                           className="input input-bordered input-sm w-full"
                           value={editForm.phone}
-                          onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((f) => ({
+                              ...f,
+                              phone: e.target.value,
+                            }))
+                          }
                         />
                       ) : (
                         <div className="text-slate-600">{t.phone || "N/A"}</div>
@@ -457,18 +522,30 @@ export default function UserManagement({
                     <td>
                       <div className="flex flex-wrap gap-3 items-center">
                         {/* Teaching assignments */}
-                        {t.teacherAssignments?.filter((a) => a.role === "teaching").length > 0 && (
+                        {t.teacherAssignments?.filter(
+                          (a) => a.role === "teaching",
+                        ).length > 0 && (
                           <div className="space-y-1">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-blue-500 block">Teaching</span>
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-blue-500 block">
+                              Teaching
+                            </span>
                             <div className="flex flex-wrap gap-1">
                               {t.teacherAssignments
                                 .filter((a) => a.role === "teaching")
                                 .map((a, idx) => (
-                                  <span key={idx} className="badge badge-sm badge-info gap-1 py-2 font-medium">
+                                  <span
+                                    key={idx}
+                                    className="badge badge-sm badge-info gap-1 py-2 font-medium"
+                                  >
                                     {a.classOrBatch} • {a.subjectName}
                                     <button
                                       className="text-red-500 font-bold ml-1 hover:text-red-700"
-                                      onClick={() => removeTeacherAssignment(t._id, t.teacherAssignments.indexOf(a))}
+                                      onClick={() =>
+                                        removeTeacherAssignment(
+                                          t._id,
+                                          t.teacherAssignments.indexOf(a),
+                                        )
+                                      }
                                     >
                                       ✕
                                     </button>
@@ -481,7 +558,9 @@ export default function UserManagement({
                         {/* Mentorship assignment */}
                         {t.mentorship?.classOrBatch && (
                           <div className="space-y-1">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-purple-500 block">Mentorship</span>
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-purple-500 block">
+                              Mentorship
+                            </span>
                             <span className="badge badge-sm badge-secondary gap-1 py-2 font-medium">
                               {t.mentorship.classOrBatch}
                               <button
@@ -494,33 +573,65 @@ export default function UserManagement({
                           </div>
                         )}
 
-                        {!t.teacherAssignments?.length && !t.mentorship?.classOrBatch && (
-                          <span className="text-xs text-slate-400 italic">No assigned classes</span>
-                        )}
+                        {!t.teacherAssignments?.length &&
+                          !t.mentorship?.classOrBatch && (
+                            <span className="text-xs text-slate-400 italic">
+                              No assigned classes
+                            </span>
+                          )}
                       </div>
                     </td>
                     <td>
                       <div className="flex justify-end gap-1">
                         {editingUser?._id === t._id ? (
                           <>
-                            <button className="btn btn-xs btn-success text-white" onClick={handleSaveEdit}>Save</button>
-                            <button className="btn btn-xs btn-ghost" onClick={handleCancelEdit}>Cancel</button>
+                            <button
+                              className="btn btn-xs btn-success text-white"
+                              onClick={handleSaveEdit}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="btn btn-xs btn-ghost"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </button>
                           </>
                         ) : (
                           <>
-                            <button className="btn btn-xs btn-outline" onClick={() => startEditUser(t)}>Edit</button>
-                            <button className="btn btn-xs btn-primary text-white" onClick={() => startAssignTeacher(t)}>Assign</button>
+                            <button
+                              className="btn btn-xs btn-outline"
+                              onClick={() => startEditUser(t)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-xs btn-primary text-white"
+                              onClick={() => startAssignTeacher(t)}
+                            >
+                              Assign
+                            </button>
                             <button
                               className="btn btn-xs btn-secondary text-white"
                               onClick={() => {
                                 setAssigningTeacher(t);
                                 setShowMentorshipForm(true);
-                                setMentorshipForm({ year: "", section: "", description: "" });
+                                setMentorshipForm({
+                                  year: "",
+                                  section: "",
+                                  description: "",
+                                });
                               }}
                             >
                               Mentor
                             </button>
-                            <button className="btn btn-xs btn-error text-white" onClick={() => deleteUser(t._id)}>Delete</button>
+                            <button
+                              className="btn btn-xs btn-error text-white"
+                              onClick={() => deleteUser(t._id)}
+                            >
+                              Delete
+                            </button>
                           </>
                         )}
                       </div>
@@ -537,7 +648,11 @@ export default function UserManagement({
           let list = teachers;
           if (searchTerm) {
             const term = searchTerm.toLowerCase();
-            list = list.filter((t) => t.name.toLowerCase().includes(term) || t.email.toLowerCase().includes(term));
+            list = list.filter(
+              (t) =>
+                t.name.toLowerCase().includes(term) ||
+                t.email.toLowerCase().includes(term),
+            );
           }
           return list.length > 10 ? (
             <div className="mt-4 flex justify-center">
@@ -545,7 +660,9 @@ export default function UserManagement({
                 className="btn btn-sm btn-outline btn-primary"
                 onClick={() => setShowAllTeachers(!showAllTeachers)}
               >
-                {showAllTeachers ? "Show Less" : `Show All Teachers (${list.length})`}
+                {showAllTeachers
+                  ? "Show Less"
+                  : `Show All Teachers (${list.length})`}
               </button>
             </div>
           ) : null;
@@ -563,7 +680,9 @@ export default function UserManagement({
                 <th className="font-semibold text-slate-700">Enrollment</th>
                 <th className="font-semibold text-slate-700">Phone</th>
                 <th className="font-semibold text-slate-700">Assigned Class</th>
-                <th className="font-semibold text-slate-700 text-right">Actions</th>
+                <th className="font-semibold text-slate-700 text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -575,14 +694,17 @@ export default function UserManagement({
                     (s) =>
                       s.name.toLowerCase().includes(term) ||
                       s.email.toLowerCase().includes(term) ||
-                      s.enrollment?.toLowerCase().includes(term)
+                      s.enrollment?.toLowerCase().includes(term),
                   );
                 }
 
                 if (list.length === 0) {
                   return (
                     <tr>
-                      <td colSpan="6" className="text-center py-8 text-slate-400 italic">
+                      <td
+                        colSpan="6"
+                        className="text-center py-8 text-slate-400 italic"
+                      >
                         No students found matching your search criteria.
                       </td>
                     </tr>
@@ -592,16 +714,23 @@ export default function UserManagement({
                 const displayed = showAllStudents ? list : list.slice(0, 10);
 
                 return displayed.map((s) => (
-                  <tr key={s._id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr
+                    key={s._id}
+                    className="hover:bg-slate-50/50 transition-colors"
+                  >
                     <td>
                       {editingUser?._id === s._id ? (
                         <input
                           className="input input-bordered input-sm w-full"
                           value={editForm.name}
-                          onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((f) => ({ ...f, name: e.target.value }))
+                          }
                         />
                       ) : (
-                        <div className="font-semibold text-slate-800">{s.name}</div>
+                        <div className="font-semibold text-slate-800">
+                          {s.name}
+                        </div>
                       )}
                     </td>
                     <td>
@@ -609,10 +738,17 @@ export default function UserManagement({
                         <input
                           className="input input-bordered input-sm w-full"
                           value={editForm.email}
-                          onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((f) => ({
+                              ...f,
+                              email: e.target.value,
+                            }))
+                          }
                         />
                       ) : (
-                        <div className="text-slate-600 font-medium">{s.email}</div>
+                        <div className="text-slate-600 font-medium">
+                          {s.email}
+                        </div>
                       )}
                     </td>
                     <td>
@@ -620,10 +756,17 @@ export default function UserManagement({
                         <input
                           className="input input-bordered input-sm w-full"
                           value={editForm.enrollment}
-                          onChange={(e) => setEditForm((f) => ({ ...f, enrollment: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((f) => ({
+                              ...f,
+                              enrollment: e.target.value,
+                            }))
+                          }
                         />
                       ) : (
-                        <div className="text-slate-600 font-mono font-medium">{s.enrollment || "N/A"}</div>
+                        <div className="text-slate-600 font-mono font-medium">
+                          {s.enrollment || "N/A"}
+                        </div>
                       )}
                     </td>
                     <td>
@@ -631,7 +774,12 @@ export default function UserManagement({
                         <input
                           className="input input-bordered input-sm w-full"
                           value={editForm.phone}
-                          onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
+                          onChange={(e) =>
+                            setEditForm((f) => ({
+                              ...f,
+                              phone: e.target.value,
+                            }))
+                          }
                         />
                       ) : (
                         <div className="text-slate-600">{s.phone || "N/A"}</div>
@@ -643,7 +791,12 @@ export default function UserManagement({
                           <select
                             className="select select-bordered select-sm w-full"
                             value={editForm.batch}
-                            onChange={(e) => setEditForm((f) => ({ ...f, batch: e.target.value }))}
+                            onChange={(e) =>
+                              setEditForm((f) => ({
+                                ...f,
+                                batch: e.target.value,
+                              }))
+                            }
                           >
                             <option value="">Year</option>
                             <option value="1st year">1st Year</option>
@@ -653,7 +806,12 @@ export default function UserManagement({
                           <select
                             className="select select-bordered select-sm w-full"
                             value={editForm.section}
-                            onChange={(e) => setEditForm((f) => ({ ...f, section: e.target.value }))}
+                            onChange={(e) =>
+                              setEditForm((f) => ({
+                                ...f,
+                                section: e.target.value,
+                              }))
+                            }
                           >
                             <option value="">Section</option>
                             <option value="E1">E1</option>
@@ -664,7 +822,9 @@ export default function UserManagement({
                         </div>
                       ) : (
                         <span className="badge badge-ghost font-medium">
-                          {s.batch && s.section ? `${s.batch} ${s.section}` : s.classOrBatch || "Unassigned"}
+                          {s.batch && s.section
+                            ? `${s.batch} ${s.section}`
+                            : s.classOrBatch || "Unassigned"}
                         </span>
                       )}
                     </td>
@@ -672,13 +832,33 @@ export default function UserManagement({
                       <div className="flex justify-end gap-1">
                         {editingUser?._id === s._id ? (
                           <>
-                            <button className="btn btn-xs btn-success text-white" onClick={handleSaveEdit}>Save</button>
-                            <button className="btn btn-xs btn-ghost" onClick={handleCancelEdit}>Cancel</button>
+                            <button
+                              className="btn btn-xs btn-success text-white"
+                              onClick={handleSaveEdit}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="btn btn-xs btn-ghost"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </button>
                           </>
                         ) : (
                           <>
-                            <button className="btn btn-xs btn-outline" onClick={() => startEditUser(s)}>Edit</button>
-                            <button className="btn btn-xs btn-error text-white" onClick={() => deleteUser(s._id)}>Delete</button>
+                            <button
+                              className="btn btn-xs btn-outline"
+                              onClick={() => startEditUser(s)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-xs btn-error text-white"
+                              onClick={() => deleteUser(s._id)}
+                            >
+                              Delete
+                            </button>
                           </>
                         )}
                       </div>
@@ -695,7 +875,12 @@ export default function UserManagement({
           let list = students;
           if (searchTerm) {
             const term = searchTerm.toLowerCase();
-            list = list.filter((s) => s.name.toLowerCase().includes(term) || s.email.toLowerCase().includes(term) || s.enrollment?.toLowerCase().includes(term));
+            list = list.filter(
+              (s) =>
+                s.name.toLowerCase().includes(term) ||
+                s.email.toLowerCase().includes(term) ||
+                s.enrollment?.toLowerCase().includes(term),
+            );
           }
           return list.length > 10 ? (
             <div className="mt-4 flex justify-center">
@@ -703,7 +888,9 @@ export default function UserManagement({
                 className="btn btn-sm btn-outline btn-primary"
                 onClick={() => setShowAllStudents(!showAllStudents)}
               >
-                {showAllStudents ? "Show Less" : `Show All Students (${list.length})`}
+                {showAllStudents
+                  ? "Show Less"
+                  : `Show All Students (${list.length})`}
               </button>
             </div>
           ) : null;
@@ -718,12 +905,18 @@ export default function UserManagement({
               Assign Course
             </h3>
             <p className="text-sm text-slate-500 mb-4">
-              Configure class and course assignments for <span className="font-semibold text-slate-700">{assigningTeacher.name}</span>.
+              Configure class and course assignments for{" "}
+              <span className="font-semibold text-slate-700">
+                {assigningTeacher.name}
+              </span>
+              .
             </p>
 
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-500">Academic Year</label>
+                <label className="text-xs font-medium text-slate-500">
+                  Academic Year
+                </label>
                 <select
                   className="select select-bordered w-full"
                   value={newAssignment.year}
@@ -743,7 +936,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-500">Section</label>
+                <label className="text-xs font-medium text-slate-500">
+                  Section
+                </label>
                 <select
                   className="select select-bordered w-full"
                   value={newAssignment.section}
@@ -763,7 +958,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-500">Subject</label>
+                <label className="text-xs font-medium text-slate-500">
+                  Subject
+                </label>
                 <select
                   className="select select-bordered w-full"
                   value={newAssignment.subjectId}
@@ -788,7 +985,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-500">Assignment Role</label>
+                <label className="text-xs font-medium text-slate-500">
+                  Assignment Role
+                </label>
                 <select
                   className="select select-bordered w-full"
                   value={newAssignment.role}
@@ -811,7 +1010,11 @@ export default function UserManagement({
                 <button
                   className="btn btn-primary"
                   onClick={handleAssignTeacher}
-                  disabled={!newAssignment.year || !newAssignment.section || !newAssignment.subjectId}
+                  disabled={
+                    !newAssignment.year ||
+                    !newAssignment.section ||
+                    !newAssignment.subjectId
+                  }
                 >
                   Assign Course
                 </button>
@@ -829,12 +1032,18 @@ export default function UserManagement({
               Assign Mentor Section
             </h3>
             <p className="text-sm text-slate-500 mb-4">
-              Configure a dedicated mentorship batch for <span className="font-semibold text-slate-700">{assigningTeacher.name}</span>.
+              Configure a dedicated mentorship batch for{" "}
+              <span className="font-semibold text-slate-700">
+                {assigningTeacher.name}
+              </span>
+              .
             </p>
 
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-500">Academic Year</label>
+                <label className="text-xs font-medium text-slate-500">
+                  Academic Year
+                </label>
                 <select
                   className="select select-bordered w-full"
                   value={mentorshipForm.year}
@@ -853,7 +1062,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-500">Section</label>
+                <label className="text-xs font-medium text-slate-500">
+                  Section
+                </label>
                 <select
                   className="select select-bordered w-full"
                   value={mentorshipForm.section}
@@ -873,7 +1084,9 @@ export default function UserManagement({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-500">Mentorship Notes (Optional)</label>
+                <label className="text-xs font-medium text-slate-500">
+                  Mentorship Notes (Optional)
+                </label>
                 <textarea
                   className="textarea textarea-bordered w-full h-20"
                   placeholder="e.g., Lead academic counseling and performance tracking."
